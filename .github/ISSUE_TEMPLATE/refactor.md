@@ -1,11 +1,10 @@
 ---
 name: Refactor
 about: Restructure code without changing what it does
-title: "[team-label] "
 ---
 
 <!--
-Title: [<team-label>] Short imperative summary, e.g. "[team-3] Split the room into systems".
+Title: Short imperative summary, e.g. "Split the room into systems". No "[team-2]" prefix: the label names the team.
 Add exactly one team label (team-1..4, platform or team-instructor).
 Fill in every section. Don't delete or rename the headings; the checks and the evaluation read them.
 -->

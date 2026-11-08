@@ -1,10 +1,10 @@
 // The fixes behind `node course/tooling/issue-report.mjs --fix`: brings an issue in line with the naming
 // and labelling rules where the team is unambiguous, and leaves the rest to the author in a comment.
 //
-// Fixed here: a missing team label, when the title prefix names a team (also a malformed one such as
-// "[team : 4]" or "[Team 4]"), and a missing or malformed "[<team-label>]" prefix, when the label names
-// the team. A title prefix that names another team than the label is not fixed: which one is right is
-// for the author to say.
+// Fixed here: a "[team-2]" title prefix left over from habit is removed (the label names the team), and
+// when the issue has no team label, the team that prefix names is added as one (also from a malformed
+// prefix such as "[team : 4]" or "[Team 4]"). A prefix that names another team than the label is left:
+// which one is right is for the author to say.
 //
 // Pure (no GitHub), so every fix is unit-tested.
 import { auditIssue } from "./issue-report.mjs";
@@ -42,17 +42,16 @@ export function planIssueFix({ issue, config, hadComment = false }) {
   const labelTeams = issue.labels.filter((l) => config.teamLabels.includes(l));
   const { team: titleTeam, prefix } = prefixTeam(issue.title, config.teamLabels);
 
-  // Labels: add the team the title names, when the issue has no team label.
+  // Labels: add the team the title prefix names, when the issue has no team label.
   const addLabels = labelTeams.length === 0 && titleTeam ? [titleTeam] : [];
   if (addLabels.length) fixed.push(`added the \`${titleTeam}\` label`);
 
-  // Title: "[team-label] Summary", from the one team label.
+  // Title: the summary without its prefix.
   const team = labelTeams.length === 1 ? labelTeams[0] : (addLabels[0] ?? null);
   let title = issue.title;
-  if (team && (titleTeam === null || titleTeam === team)) {
-    const rest = (prefix ? issue.title.trim().slice(prefix.length) : issue.title.trim()).trim();
-    const wanted = `[${team}] ${rest}`;
-    if (rest && wanted !== issue.title) title = wanted;
+  if (prefix && (titleTeam === null || titleTeam === team || labelTeams.includes(titleTeam))) {
+    const rest = issue.title.trim().slice(prefix.trim().length).trim();
+    if (rest) title = rest;
   }
   if (title !== issue.title) fixed.push(`fixed the title: \`${title}\``);
 

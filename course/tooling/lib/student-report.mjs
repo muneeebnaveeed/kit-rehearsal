@@ -112,7 +112,7 @@ export function collectStats({ prs, issues, docs, teamLabels, members = [] }) {
     if (author) {
       author.issuesOpened++;
       if (team) author.teams[team] = (author.teams[team] ?? 0) + 1;
-      if (!team || !issue.title.startsWith(`[${team}]`)) author.issuesBadlyNamed++;
+      if (!team || /^\s*\[/.test(issue.title)) author.issuesBadlyNamed++;
     }
     for (const a of issue.assignees) user(a).issuesAssigned++;
     for (const c of issue.commenters) if (c !== issue.author) user(c).comments++;
@@ -164,10 +164,10 @@ export function scoreStudent(s) {
   if (s.issuesOpened) {
     if (s.issuesBadlyNamed === 0) {
       process++;
-      why.push(`${plural(s.issuesOpened, "issue")} opened, all with a team label and a matching title`);
+      why.push(`${plural(s.issuesOpened, "issue")} opened, all with a team label and no title prefix`);
     } else
       why.push(
-        `${plural(s.issuesOpened, "issue")} opened, ${s.issuesBadlyNamed} without a team label or a matching title`,
+        `${plural(s.issuesOpened, "issue")} opened, ${s.issuesBadlyNamed} without a team label or with a title prefix`,
       );
   }
 

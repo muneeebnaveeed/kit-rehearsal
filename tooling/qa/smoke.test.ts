@@ -1,4 +1,5 @@
 // Tests for `pnpm qa:smoke` (lib/smoke.ts), with the real watch patterns from .railway/railway.ts.
+import { execFileSync, spawnSync } from "node:child_process";
 import { describe, expect, it } from "vitest";
 import { watchPatterns } from "../../.railway/railway.ts";
 import { judge, overall, pagesOk, redeploys, smokeMarkdown, type Target } from "./lib/smoke.ts";
@@ -84,5 +85,19 @@ describe("smokeMarkdown", () => {
     });
     expect(md).toContain("| team-2 | ok: runs a2ac025 | 1 error(s) | created |");
     expect(md).toContain("- console error: boom");
+  });
+});
+
+describe("qa:smoke --since", () => {
+  it("passes a push that deploys nothing without a gateway address", () => {
+    const head = execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim();
+    const env = { ...process.env, KIT_GATEWAY: "", GITHUB_OUTPUT: "" };
+    const run = (...args: string[]) =>
+      spawnSync(process.execPath, [new URL("./smoke.ts", import.meta.url).pathname, "--sha", head, ...args], {
+        encoding: "utf8",
+        env,
+      });
+    expect(run("--since", head).status).toBe(0);
+    expect(run().status).toBe(3);
   });
 });
