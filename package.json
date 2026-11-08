@@ -40,6 +40,7 @@
     "pr:ci-logs": "node tooling/workflow/ci-logs.ts",
     "pr:comments": "node tooling/workflow/pr-comments.ts",
     "pr:rubric": "node tooling/workflow/pr-rubric.ts",
+    "issues:close-shipped": "node tooling/workflow/close-shipped.ts",
     "pipeline": "node tooling/workflow/pipeline.ts",
     "preflight": "node tooling/workflow/preflight.mjs",
     "preflight:quick": "node tooling/workflow/preflight.mjs --quick",

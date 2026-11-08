@@ -43,11 +43,11 @@ We track progress with GitHub issues and pull requests.
 
 1. **Issue first, then work.** Before you start a piece of work, open an issue:
    - A short title, with no team prefix: the label names the team.
-   - Describe the **goal** and the **done when** criteria (a short checklist).
+   - Fill in every field of the issue template (`**Label**: value`), in order: at least the **goal** and the **done when** criteria (a short checklist). Don't delete or rename the labels: the checks and the evaluation read them.
    - Add your team label and assign the issue to whoever works on it.
 2. **Every pull request closes an issue.** Put `Closes #<issue number>` in the PR description, so the issue is closed automatically when the PR is merged.
    - Every PR follows the template for its type (feature, bug, docs, chore, refactor or sync) in [`.github/PULL_REQUEST_TEMPLATE/`](../.github/PULL_REQUEST_TEMPLATE/). Don't pick it yourself: `pnpm workflow:classify --kind pr` chooses the template, team label and base branch, the `fill-pr` agent skill fills it in, and `pnpm check:pr` (also run by CI) validates it.
-   - Fill in every field (`**Label**: value`), in order, and tick the checklist. Write `None` if a field does not apply. Don't delete or rename the labels: the checks and the evaluation read them. The Summary says why, not what changed.
+   - Fill in every field (`**Label**: value`), in order, and tick the checklist. Write `None` if a field does not apply, and under *Screenshots* say why: `None, <reason>`. Don't delete or rename the labels: the checks and the evaluation read them. The Summary says why, not what changed.
    - Details: [Templates, classification and checks](../CLAUDE.md#templates-classification-and-checks) in `CLAUDE.md`.
    - The full workflow (branch names, labels, reviews) is in [AGENTS.md](../AGENTS.md).
 

@@ -106,6 +106,12 @@ describe("fillTemplate", () => {
     expect(section(body, "Team")).toBe("platform");
   });
 
+  it("puts each field on the line after the last, with no blank line between them", () => {
+    const body = fillTemplate(template("sync"), { sections: { Summary: "Hello." } });
+    expect(body).not.toMatch(/\n\s*\n/);
+    expect(body).toMatch(/^\*\*Linked issue\*\*: Refs #\n\*\*Team\*\*: platform\n\*\*Summary\*\*: Hello\.\n/);
+  });
+
   it("ticks only the checklist items it is told to, with an optional note", () => {
     const body = fillTemplate(template("sync"), {
       sections: {},
@@ -140,6 +146,9 @@ describe("syncPr", () => {
     });
     expect(section(pr.body, "Summary")).toContain("4 commit(s) behind");
     expect(section(pr.body, "Summary")).toContain("no conflicts");
+    expect(section(pr.body, "Screenshots")).toBe(
+      "None, a sync carries changes reviewed and shown in their own PRs",
+    );
     expect(bodyProblems(pr, { config, templates })).toEqual([]);
 
     const conflicted = syncPr({
@@ -184,7 +193,21 @@ describe("promotePr", () => {
     expect(section(pr.body, "Summary")).toContain("Ships team-2's finished work to production");
     expect(section(pr.body, "Impact")).toContain("deploy to production");
     expect(section(pr.body, "Impact")).toContain("git revert -m 1");
+    expect(section(pr.body, "Screenshots")).toBe(
+      "None, a promotion carries changes reviewed and shown in their own PRs",
+    );
     expect(bodyProblems(pr, { config, templates })).toEqual([]);
+  });
+
+  it("keeps a Summary of several paragraphs as one field, with no blank line before the next field", () => {
+    const pr = promotePr({ templates, issue, team: "team-2", ahead: 7, behind: 3, prs, conflicts: [] });
+    const summary = section(pr.body, "Summary") ?? "";
+    expect(summary.split("\n\n").length).toBeGreaterThan(2);
+    expect(summary).toContain("Included pull requests:");
+    expect(fieldsOf(pr.body).map((f) => f.heading)).toEqual(
+      fieldsOf(template("chore")).map((f) => f.heading),
+    );
+    expect(pr.body).not.toMatch(/\n\n\*\*/);
   });
 
   it("says when the feature branch is behind main or would conflict", () => {

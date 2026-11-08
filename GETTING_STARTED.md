@@ -104,7 +104,7 @@ team-N/<issue>-<description>  →  feature/team-N  →  main
 
    It runs lint, typecheck, tests and the build, then checks your branch name, base branch and issue, folder ownership, commit messages, committed files, secrets and docs links, and says how to fix anything that fails. CI runs the same checks on your PR.
 
-5. **Open a pull request into `feature/team-N`.** Title in the commit format, e.g. `feat(team-N): add score display`, the same label as the issue, `Closes #42` in the description, and every field of the PR template filled in. The *Summary* says why you made the change, not what changed.
+5. **Open a pull request into `feature/team-N`.** Title in the commit format, e.g. `feat(team-N): add score display`, the same label as the issue, `Closes #42` in the description, and every field of the PR template filled in. The *Summary* says why you made the change, not what changed. *Screenshots* has an image, or `None, <why there is nothing to show>`.
 6. **Wait for CI.** Each check (🧰 setup, 📝 config, 🧹 lint, 🔎 typecheck, 🧪 test, 📦 build) shows separately on the PR. All of them must be green.
 7. **Get a review** from a teammate, fix any comments, then merge and delete the branch.
 8. **Keep up to date.** After `feature/team-N` is merged into `main`, merge `main` back into `feature/team-N` before starting the next piece of work.

@@ -7,6 +7,26 @@ import { fieldLabelsOf, fieldsOf, stripComments } from "./template.mjs";
 const normalize = (s) => s.trim().toLowerCase();
 const WORK_TYPES = ["feature", "bug", "docs", "chore", "refactor"];
 
+const IMAGE = /!\[[^\]]*\]\(|<img\s|https?:\/\/\S+/i;
+const NONE_REASON = /^(?:none|n\/?a)\s*[,:-]\s*(\S[\s\S]*)$/i;
+const BARE_NONE = /^(?:none|n\/?a)\s*[.,:-]*$/i;
+export const SCREENSHOTS_FIX = "Add an image, or write `None, <why there is nothing to show>`.";
+
+/**
+ * What a Screenshots value holds: an image or link, "None, <reason>" (also "None: " or "None - "),
+ * a bare "None" or "N/A", or other text.
+ * @param {string} value the field's text, comments stripped
+ * @returns {{ kind: "image" } | { kind: "none", reason: string } | { kind: "bare" } | { kind: "text" }}
+ */
+export function screenshotsOf(value) {
+  const v = value.trim();
+  if (IMAGE.test(v)) return { kind: "image" };
+  const reason = NONE_REASON.exec(v)?.[1]?.trim();
+  if (reason && /\w/.test(reason)) return { kind: "none", reason };
+  if (BARE_NONE.test(v) || NONE_REASON.test(v)) return { kind: "bare" };
+  return { kind: "text" };
+}
+
 /**
  * Finds which PR template a body follows from the fields only that template has.
  * Several matches are narrowed to the most specific one.
@@ -65,11 +85,11 @@ export function checkPr({
   classification = null,
 }) {
   const body = rawBody ?? "";
-  /** @type {{ rule: string, message: string }[]} */
+  /** @type {{ rule: string, message: string, fix?: string }[]} */
   const problems = [];
   /** @type {string[]} */
   const warnings = [];
-  const add = (rule, message) => problems.push({ rule, message });
+  const add = (rule, message, fix = "") => problems.push({ rule, message, ...(fix ? { fix } : {}) });
 
   // Title: Conventional Commits like a commit subject, with the team label as the scope,
   // e.g. "feat(team-2): add login page" (see "Pull request" in CLAUDE.md).
@@ -178,7 +198,8 @@ export function checkPr({
 
     const content = stripComments(sections[idx].body).trim();
     if (content.replace(/^\s*(?:[-*]|\d+\.)\s*$/gm, "").trim() === "") {
-      add("empty", `Field "**${heading}**" is empty. Fill it in, or write "None" if it does not apply.`);
+      if (heading === "Screenshots") add("empty", `Field "**${heading}**" is empty.`, SCREENSHOTS_FIX);
+      else add("empty", `Field "**${heading}**" is empty. Fill it in, or write "None" if it does not apply.`);
       continue;
     }
     if (heading === "Linked issue") {
@@ -196,6 +217,9 @@ export function checkPr({
       } else if (titleLabel && team !== titleLabel) {
         add("team", `"**Team**" says ${team} but the title's scope is ${titleLabel}.`);
       }
+    } else if (heading === "Screenshots") {
+      if (screenshotsOf(content).kind === "bare")
+        add("screenshots", `"**Screenshots**" says "${content}" without a reason.`, SCREENSHOTS_FIX);
     } else if (heading === "Checklist") {
       const boxes = content.split(/\r?\n/).filter((l) => /^\s*-\s*\[[ xX]\]/.test(l));
       const needed = (stripComments(templates[chosen]).match(/^\s*-\s*\[ \]/gm) ?? []).length;

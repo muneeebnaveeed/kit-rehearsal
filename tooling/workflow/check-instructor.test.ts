@@ -19,7 +19,7 @@ const pr = (over: Record<string, unknown> = {}) => ({
   author: "student",
   labels: ["team-2"],
   title: "feat(team-2): add login",
-  body: "## Team\n\nteam-2\n",
+  body: "**Team**: team-2\n",
   instructors,
   ...over,
 });
@@ -28,7 +28,7 @@ const issue = (over: Record<string, unknown> = {}) => pr({ kind: "issue", title:
 describe("instructorClaims", () => {
   it("is empty for an ordinary item", () => {
     expect(
-      instructorClaims({ labels: ["team-2", "bug"], title: "fix(team-2): x", body: "## Team\n\nteam-2" }),
+      instructorClaims({ labels: ["team-2", "bug"], title: "fix(team-2): x", body: "**Team**: team-2" }),
     ).toEqual([]);
   });
 
@@ -37,9 +37,10 @@ describe("instructorClaims", () => {
     ["a conventional title scope", { title: "docs(team-instructor): update readme" }],
     ["a scope with a breaking-change mark", { title: "feat(team-instructor)!: change the rule" }],
     ["the old [team-instructor] prefix", { title: "[team-instructor] Add a report" }],
-    ["the Team section", { body: "## Summary\n\nx\n\n## Team\n\nteam-instructor\n" }],
-    ["the Team section in backticks", { body: "## Team\n\n`team-instructor`\n" }],
-    ["the Team section in capitals", { body: "## Team\n\nTeam-Instructor\n" }],
+    ["the Team field", { body: "**Summary**: x\n**Team**: team-instructor\n" }],
+    ["the Team field in backticks", { body: "**Team**: `team-instructor`\n" }],
+    ["the Team field in capitals", { body: "**Team**: Team-Instructor\n" }],
+    ["the Team field with its value on the next line", { body: "**Goal**: x\n**Team**:\nteam-instructor\n" }],
   ])("detects %s", (_name, over) => {
     expect(instructorClaims(over).length).toBeGreaterThan(0);
   });
@@ -48,7 +49,7 @@ describe("instructorClaims", () => {
     const claims = instructorClaims({
       labels: ["team-instructor"],
       title: "feat(team-instructor): x",
-      body: "## Team\n\nteam-instructor",
+      body: "**Team**: team-instructor",
     });
     expect(claims).toHaveLength(3);
   });
@@ -57,7 +58,7 @@ describe("instructorClaims", () => {
     expect(
       instructorClaims({
         title: "docs(team-2): explain team-instructor rules",
-        body: "## Summary\n\nteam-instructor owns course/",
+        body: "**Summary**: team-instructor owns course/",
       }),
     ).toEqual([]);
   });
@@ -109,7 +110,7 @@ describe("checkInstructor", () => {
 
   it("does not look at AI attribution: an instructor's agent-assisted PR passes", () => {
     const body =
-      "## Team\n\nteam-instructor\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>";
+      "**Team**: team-instructor\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>";
     expect(checkInstructor(pr({ author: "instructor-b", labels: ["team-instructor"], body })).ok).toBe(true);
   });
 });

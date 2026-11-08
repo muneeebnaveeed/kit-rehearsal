@@ -1,0 +1,40 @@
+# Closes the issues a promotion shipped, once it merges into main (pnpm issues:close-shipped). GitHub only
+# acts on "Closes #N" when a PR merges into the default branch, and work PRs merge into feature/team-N,
+# so without this their issues would stay open. An issue closes when its work reaches production.
+#
+# Runs on the merged promotion with main's code: promotions come from this repository's own branches,
+# and the script only reads PR and issue metadata through the API, never a PR's code.
+# Owner: platform team.
+name: Close shipped issues
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: read
+  issues: write
+
+jobs:
+  close:
+    name: close shipped issues
+    if: ${{ github.event.pull_request.merged && startsWith(github.event.pull_request.head.ref, 'feature/team-') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+
+      # The script has no dependencies, so there is no install step.
+      - name: Close the issues
+        env:
+          GH_TOKEN: ${{ github.token }}
+          NUMBER: ${{ github.event.pull_request.number }}
+        run: node tooling/workflow/close-shipped.ts --number "$NUMBER"

@@ -1,5 +1,5 @@
 // Validates an issue against its template. Pure: the caller passes the template texts.
-import { headingsOf, sectionsOf, stripComments } from "./template.mjs";
+import { fieldLabelsOf, fieldsOf, stripComments } from "./template.mjs";
 
 const normalize = (s) => s.trim().toLowerCase();
 
@@ -31,46 +31,49 @@ export function checkIssue({ title, body, labels = null, type = null, config, te
     }
   }
 
-  // Which template does the body follow? An explicit type wins; otherwise a heading that only one
+  // Which template does the body follow? An explicit type wins; otherwise a field that only one
   // template has decides; with none, it is a feature.
-  const headingSets = Object.fromEntries(Object.entries(templates).map(([k, md]) => [k, headingsOf(md)]));
-  const bodyHeadings = sectionsOf(body).map((s) => normalize(s.heading));
+  const labelSets = Object.fromEntries(Object.entries(templates).map(([k, md]) => [k, fieldLabelsOf(md)]));
+  const fields = fieldsOf(body);
+  const bodyLabels = fields.map((f) => normalize(f.heading));
   let chosen = type;
   if (!chosen) {
-    const common = new Set((headingSets.feature ?? []).map(normalize));
-    const hits = Object.entries(headingSets)
+    const common = new Set((labelSets.feature ?? []).map(normalize));
+    const hits = Object.entries(labelSets)
       .filter(([k]) => k !== "feature")
-      .filter(([, hs]) => hs.some((h) => !common.has(normalize(h)) && bodyHeadings.includes(normalize(h))))
+      .filter(([, ls]) => ls.some((l) => !common.has(normalize(l)) && bodyLabels.includes(normalize(l))))
       .map(([k]) => k);
     if (hits.length > 1) {
-      add("template", `The body mixes headings of several templates (${hits.join(", ")}). Use one template.`);
+      add(
+        "template",
+        `The body mixes the fields of several templates (${hits.join(", ")}). Use one template.`,
+      );
     }
     chosen = hits.length === 1 ? hits[0] : "feature";
   }
-  if (!headingSets[chosen]) {
+  if (!labelSets[chosen]) {
     add("template", `No issue template for type "${chosen}".`);
     return { ok: false, type: chosen, problems };
   }
 
-  // Every heading of the template, in order, each with real content.
-  const sections = sectionsOf(body);
+  // Every field of the template, in order, each with real content.
   let cursor = -1;
-  for (const heading of headingSets[chosen]) {
-    const idx = sections.findIndex((s) => normalize(s.heading) === normalize(heading));
+  for (const label of labelSets[chosen]) {
+    const idx = fields.findIndex((f) => normalize(f.heading) === normalize(label));
     if (idx === -1) {
-      add("heading", `Missing section "## ${heading}".`);
+      add("heading", `Missing field "**${label}**".`);
       continue;
     }
-    if (idx < cursor) add("order", `Section "## ${heading}" is out of order; follow the template.`);
+    if (idx < cursor) add("order", `Field "**${label}**" is out of order; follow the template.`);
     cursor = Math.max(cursor, idx);
 
-    const content = stripComments(sections[idx].body).trim();
-    if (heading === "Done when") {
+    const content = stripComments(fields[idx].body).trim();
+    if (label === "Done when") {
       const items = content.split(/\r?\n/).filter((l) => /^\s*-\s*\[[ xX]\]\s*\S/.test(l));
       if (items.length === 0)
         add("done-when", '"Done when" needs at least one checkbox item with text, e.g. "- [ ] Tests pass".');
     } else if (content.replace(/^\s*(?:[-*]|\d+\.)\s*$/gm, "").trim() === "") {
-      add("empty", `Section "## ${heading}" is empty. Fill it in, or write "None" if it does not apply.`);
+      add("empty", `Field "**${label}**" is empty. Fill it in, or write "None" if it does not apply.`);
     }
   }
 
