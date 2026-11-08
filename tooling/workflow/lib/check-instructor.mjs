@@ -1,5 +1,5 @@
 // The team-instructor identity is reserved for the instructors. An issue or pull request "uses" it when
-// it carries the team-instructor label, names it in the title, or puts it under "## Team". Whoever does
+// it carries the team-instructor label, names it in the title, or puts it in the "**Team**" field. Whoever does
 // that must be on the list in .github/instructors.json. Pure (no GitHub, no file system), so every rule
 // is unit-tested.
 //
@@ -7,7 +7,7 @@
 // Code" and Co-Authored-By trailers (the course is AI first), so rejecting those would block their work.
 import { readFileSync } from "node:fs";
 import { parsePrefix } from "./rules.mjs";
-import { fieldsOf, sectionsOf } from "./template.mjs";
+import { fieldsOf } from "./template.mjs";
 
 export const INSTRUCTOR_LABEL = "team-instructor";
 
@@ -36,10 +36,7 @@ export function instructorClaims({ labels = [], title = "", body = "" }) {
   if (parsePrefix(t)?.scope === INSTRUCTOR_LABEL) reasons.push("the team-instructor scope in its title");
   else if (t.toLowerCase().startsWith(`[${INSTRUCTOR_LABEL}]`))
     reasons.push("the [team-instructor] title prefix");
-  // PRs carry "**Team**:" as a field, issues a "## Team" heading.
-  const team = [...fieldsOf(body ?? ""), ...sectionsOf(body ?? "")].find(
-    (s) => s.heading.toLowerCase() === "team",
-  );
+  const team = fieldsOf(body ?? "").find((s) => s.heading.toLowerCase() === "team");
   if (team && team.body.trim().split(/\s+/)[0].replace(/[`*]/g, "").toLowerCase() === INSTRUCTOR_LABEL) {
     reasons.push("team-instructor as its Team");
   }

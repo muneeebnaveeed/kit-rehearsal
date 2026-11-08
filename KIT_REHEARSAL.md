@@ -21,6 +21,7 @@ You need two GitHub accounts: one that opens a work PR and one that approves it.
   - `feature/team-1` still exists. If GitHub deleted it, the feature ruleset is missing or "delete branch on merge" won over it: fix that before the event.
   - Railway deployed `main`, or holds the deploy for approval because the app isn't a project member (KIT_SETUP.md, section 6). Note which, and fix section 6 if it is wrong.
   - The Production check run on the merge commit is green and a GitHub release exists.
+  - The work PR's issue is closed, with a "Shipped to production" comment naming the promotion.
   - `pnpm env:status` shows production on the merge commit.
 
 - [ ] Run the pipeline by hand again. `feature/team-2` (or any team branch other than team-1) is now behind `main`, so the run opens a sync PR into it with auto-merge on, and skips the promotion for team-1 because it has nothing new. Approve the sync as a member of that team; it merges once CI is green.

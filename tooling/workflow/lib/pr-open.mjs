@@ -167,7 +167,7 @@ export function defaultSections({ files }) {
   const docs = files.filter((f) => f.endsWith(".md"));
   return {
     "How to test": PREFLIGHT_TEST_TEXT,
-    Screenshots: files.some((f) => CLIENT_FILE.test(f)) ? undefined : "None: no client files changed.",
+    Screenshots: files.some((f) => CLIENT_FILE.test(f)) ? undefined : "None, no client files changed.",
     "Pages affected": docs.length ? docs.map((f) => `- \`${f}\``).join("\n") : undefined,
   };
 }
@@ -190,5 +190,5 @@ export function buildPrBody({ template, sections, facts }) {
     if (!content) missing.push(label);
     return renderField(label, content);
   });
-  return { body: `${parts.join("\n\n")}\n`, missing, unticked: ticked.unticked };
+  return { body: `${parts.join("\n")}\n`, missing, unticked: ticked.unticked };
 }

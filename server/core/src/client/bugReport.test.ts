@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { BugReportSchema } from "../shared/messages.ts";
 import {
@@ -95,11 +96,49 @@ describe("buildIssueUrl", () => {
     expect(url.searchParams.get("labels")).toBe("bug,team-2");
     expect(url.searchParams.get("title")).toBe("Player stuck");
     const body = url.searchParams.get("body") ?? "";
-    expect(body).toContain("## Goal");
-    expect(body).toContain("## Done when");
+    expect(body).toContain("**Goal**: Player stuck. Reported from the game with F8.");
+    expect(body).toContain("**Done when**:\n- [ ] The replay no longer shows the bug");
     expect(body).toContain("http://localhost:2567/api/bug-reports/42");
     expect(body).toContain("tick 420");
     expect(body).toContain("150 ms");
+  });
+});
+
+describe("buildIssueUrl body", () => {
+  const labelsOf = (md: string) => [...md.matchAll(/^\*\*(.+?)\*\*:/gm)].map((m) => m[1]);
+  const bodyFor = (description?: string) => {
+    const report = buildBugReport(CONTEXT, {
+      title: "Player stuck",
+      description,
+      logs: [],
+      screenshot: null,
+    });
+    const url = buildIssueUrl({
+      repo: "OWNER/REPO",
+      teamLabel: "team-2",
+      report,
+      roomCode: null,
+      reportUrl: "http://localhost:2567/api/bug-reports/42",
+      replayUrl: null,
+    });
+    return new URL(url).searchParams.get("body") ?? "";
+  };
+
+  it("has the bug template's fields, in order, one per line with no blank line between them", () => {
+    const template = readFileSync(
+      new URL("../../../../.github/ISSUE_TEMPLATE/bug.md", import.meta.url),
+      "utf8",
+    );
+    const body = bodyFor();
+    expect(labelsOf(body)).toEqual(labelsOf(template));
+    expect(body).not.toMatch(/^##\s/m);
+    expect(body).not.toMatch(/\n\s*\n/);
+  });
+
+  it("puts a multi-line description on the lines after its label", () => {
+    expect(bodyFor("It froze.\nThen it crashed.")).toContain(
+      "**Actual behaviour**:\nIt froze.\nThen it crashed.\n**What changes**:",
+    );
   });
 });
 

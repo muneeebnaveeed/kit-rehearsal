@@ -27,6 +27,7 @@ function body(linked = "Closes #12") {
     .replace(/^\*\*Team\*\*:.*$/m, "**Team**: team-2")
     .replace(/- \[ \]/g, "- [x]")
     .replace(/^\*\*How to test\*\*:[ \t]*$/m, "**How to test**: pnpm test")
+    .replace(/^\*\*Screenshots\*\*:[ \t]*$/m, "**Screenshots**: None, nothing visible changed")
     .replace(/^(\*\*(?!Checklist\*)[^*]+\*\*):[ \t]*$/gm, "$1: None");
 }
 

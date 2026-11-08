@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { checkPr, detectPrType } from "./lib/check-pr.mjs";
+import { checkPr, detectPrType, SCREENSHOTS_FIX, screenshotsOf } from "./lib/check-pr.mjs";
 import { fieldLabelsOf } from "./lib/template.mjs";
 
 const root = new URL("../../", import.meta.url);
@@ -32,6 +32,7 @@ function fill(type: string, over: { linked?: string; team?: string } = {}) {
   return md
     .replace(/^\*\*How to test\*\*:[ \t]*$/m, "**How to test**: pnpm test")
     .replace(/^\*\*Pages affected\*\*:[ \t]*$/m, "**Pages affected**: README.md")
+    .replace(/^\*\*Screenshots\*\*:[ \t]*$/m, "**Screenshots**: None, nothing visible changed")
     .replace(/^(\*\*(?!Checklist\*)[^*]+\*\*):[ \t]*$/gm, "$1: None");
 }
 
@@ -205,6 +206,55 @@ describe("work PRs", () => {
     const r = check({ classification: { undecided: false, type: "chore", rule: "commit-prefix" } });
     expect(r.ok).toBe(true);
     expect(r.warnings[0]).toContain('classify this as "chore"');
+  });
+});
+
+describe("Screenshots", () => {
+  const withShots = (value: string) =>
+    fill("feature").replace(/^\*\*Screenshots\*\*:.*$/m, `**Screenshots**: ${value}`);
+
+  it.each(["None", "none", "None.", "N/A", "n/a", "NA", "None,", "None: ", "None - "])(
+    'rejects a bare "%s" with the fix',
+    (value) => {
+      const r = check({}, withShots(value));
+      expect(r.problems).toEqual([
+        {
+          rule: "screenshots",
+          message: `"**Screenshots**" says "${value.trim()}" without a reason.`,
+          fix: SCREENSHOTS_FIX,
+        },
+      ]);
+      expect(SCREENSHOTS_FIX).toBe("Add an image, or write `None, <why there is nothing to show>`.");
+    },
+  );
+
+  it.each([
+    "None, no client files changed",
+    "none: only the server changed",
+    "NONE - a tooling change",
+    "N/A, docs only",
+    "![hud](https://github.com/user-attachments/assets/1)",
+    '<img src="https://example.com/a.png">',
+    "https://github.com/user-attachments/assets/1",
+  ])('accepts "%s"', (value) => {
+    expect(check({}, withShots(value)).problems).toEqual([]);
+  });
+
+  it("gives an empty Screenshots field the same fix", () => {
+    expect(check({}, withShots("")).problems).toContainEqual({
+      rule: "empty",
+      message: 'Field "**Screenshots**" is empty.',
+      fix: SCREENSHOTS_FIX,
+    });
+  });
+
+  it("tells an image, a reason, a bare None and other text apart", () => {
+    expect(screenshotsOf("![a](https://x/y.png)")).toEqual({ kind: "image" });
+    expect(screenshotsOf("None, the server only")).toEqual({ kind: "none", reason: "the server only" });
+    expect(screenshotsOf("None: two\nlines")).toEqual({ kind: "none", reason: "two\nlines" });
+    expect(screenshotsOf("None")).toEqual({ kind: "bare" });
+    expect(screenshotsOf("None, .")).toEqual({ kind: "bare" });
+    expect(screenshotsOf("Nothing visible")).toEqual({ kind: "text" });
   });
 });
 

@@ -193,7 +193,7 @@ describe("defaultSections", () => {
     expect(s.Summary).toBeUndefined();
     expect(s["Root cause"]).toBeUndefined();
     expect(s["How to test"]).toMatch(/pnpm preflight/);
-    expect(s.Screenshots).toMatch(/^None/);
+    expect(s.Screenshots).toBe("None, no client files changed.");
   });
 
   it("leaves screenshots to you when client files changed", () => {
@@ -259,7 +259,7 @@ describe("buildPrBody", () => {
         Team: "team-2",
         Summary: "x",
         "How to test": "y",
-        Screenshots: "None",
+        Screenshots: "None, nothing visible changed",
       },
       facts: allFacts,
     });
@@ -299,6 +299,7 @@ describe("buildPrBody", () => {
       facts: allFacts,
     });
     expect(body).not.toMatch(/<!--/);
+    expect(body).not.toMatch(/\n\s*\n/);
     expect([...body.matchAll(/^\*\*(.+?)\*\*:/gm)].map((m) => m[1])).toEqual([
       "Linked issue",
       "Team",
