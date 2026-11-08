@@ -1,11 +1,10 @@
 ---
 name: Bug
 about: Something that is broken or behaves wrongly
-title: "[team-label] "
 ---
 
 <!--
-Title: [<team-label>] Short description of the problem, e.g. "[team-2] Player can walk through walls".
+Title: Short description of the problem, e.g. "Player can walk through walls". No "[team-2]" prefix: the label names the team.
 Add exactly one team label (team-1..4, platform or team-instructor).
 Fill in every section. Don't delete or rename the headings; the checks and the evaluation read them.
 -->

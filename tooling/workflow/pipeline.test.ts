@@ -16,12 +16,12 @@ const templates = Object.fromEntries(
 describe("trackingIssue", () => {
   it("names one issue per team and step", () => {
     expect(trackingIssue({ kind: "promote", team: "team-3" })).toMatchObject({
-      title: "[team-3] Promotions from feature/team-3",
-      label: "team-3",
+      title: "Promotions from feature/team-3 into main",
+      // team:promote only accepts a platform issue, like branches:sync.
+      label: "platform",
     });
     expect(trackingIssue({ kind: "sync", team: "team-3" })).toMatchObject({
-      title: "[platform] Syncs from main into feature/team-3",
-      // branches:sync only accepts a platform issue.
+      title: "Syncs from main into feature/team-3",
       label: "platform",
     });
   });

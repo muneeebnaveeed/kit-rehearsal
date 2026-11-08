@@ -18,21 +18,16 @@ export function checkIssue({ title, body, labels = null, type = null, config, te
   const problems = [];
   const add = (rule, message) => problems.push({ rule, message });
 
-  // Title: "[team-label] Summary"
-  const t = /^\[([^\]]+)\]\s+(\S.*)$/.exec(title.trim());
-  if (!t) {
-    add("title", `Title must look like "[<team-label>] Short summary" (got "${title.trim()}").`);
-  } else if (!config.teamLabels.includes(t[1])) {
-    add("title", `"[${t[1]}]" is not a team label. Use one of: ${config.teamLabels.join(", ")}.`);
-  }
+  // Title: a short summary. The team label already names the team, so no "[team-2]" prefix.
+  const prefix = /^\s*(\[[^\]]*\])/.exec(title)?.[1];
+  if (!title.trim()) add("title", "The title is empty.");
+  else if (prefix) add("title", `Drop "${prefix}" from the title: the team label already names the team.`);
 
-  // Labels: exactly one team label, matching the title.
+  // Labels: exactly one team label.
   if (labels) {
     const team = labels.filter((l) => config.teamLabels.includes(l));
     if (team.length !== 1) {
       add("labels", `Needs exactly one team label (${config.teamLabels.join(", ")}); has ${team.length}.`);
-    } else if (t && t[1] !== team[0]) {
-      add("labels", `Title says [${t[1]}] but the team label is ${team[0]}.`);
     }
   }
 

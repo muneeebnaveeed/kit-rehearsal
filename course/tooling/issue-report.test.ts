@@ -9,7 +9,7 @@ const teamLabels: string[] = config.teamLabels;
 
 const issue = (over: Record<string, unknown> = {}) => ({
   number: 10,
-  title: "[team-2] Add login",
+  title: "Add login",
   url: "https://example.test/10",
   state: "OPEN",
   author: "someone",
@@ -20,7 +20,7 @@ const audit = (over: Record<string, unknown> = {}) => auditIssue({ issue: issue(
 const rules = (r: { problems: { rule: string }[] }) => r.problems.map((p) => p.rule);
 
 describe("auditIssue", () => {
-  it("passes an issue with one team label and a matching prefix", () => {
+  it("passes an issue with one team label and no prefix", () => {
     expect(audit()).toMatchObject({ ok: true, team: "team-2", problems: [] });
   });
 
@@ -29,21 +29,21 @@ describe("auditIssue", () => {
   });
 
   it("flags an issue with no team label", () => {
-    const r = audit({ title: "[team-1] Scaffold the game", labels: [] });
+    const r = audit({ title: "Scaffold the game", labels: [] });
     expect(rules(r)).toEqual(["labels"]);
     expect(r.problems[0]?.message).toContain("has 0");
-    expect(r.team).toBe("team-1"); // attributed through its title prefix
+    expect(r.team).toBeNull();
   });
 
   it("flags a malformed prefix such as [team : 4]", () => {
     const r = audit({ title: "[team : 4] Game state", labels: ["team-4"] });
-    expect(rules(r)).toEqual(["title", "labels"]);
-    expect(r.problems[0]?.message).toContain("not a team label");
+    expect(rules(r)).toEqual(["title"]);
+    expect(r.problems[0]?.message).toContain('Drop "[team : 4]"');
     expect(r.team).toBe("team-4");
   });
 
-  it("flags a title without a prefix and a missing team label", () => {
-    const r = audit({ title: "Document the branching workflow", labels: ["documentation"] });
+  it("flags a prefix and a missing team label", () => {
+    const r = audit({ title: "[docs] Document the branching workflow", labels: ["documentation"] });
     expect(rules(r)).toEqual(["title", "labels"]);
     expect(r.team).toBeNull();
   });
@@ -51,13 +51,13 @@ describe("auditIssue", () => {
   it("flags two team labels", () => {
     const r = audit({ labels: ["team-1", "team-2"] });
     expect(r.problems[0]?.message).toContain("has 2");
-    expect(r.team).toBe("team-2"); // two labels name no team, so the title prefix attributes it
-    expect(audit({ title: "No prefix", labels: ["team-1", "team-2"] }).team).toBeNull();
+    expect(r.team).toBeNull(); // two labels name no team, and the title never does
+    expect(audit({ title: "[team-2] x", labels: ["team-1", "team-2"] }).team).toBeNull();
   });
 
-  it("flags a prefix that disagrees with the label", () => {
+  it("flags a prefix that disagrees with the label as a prefix only", () => {
     const r = audit({ title: "[team-1] Add login", labels: ["team-2"] });
-    expect(r.problems[0]?.message).toContain("Title says [team-1] but the team label is team-2");
+    expect(rules(r)).toEqual(["title"]);
     expect(r.team).toBe("team-2");
   });
 
@@ -67,31 +67,32 @@ describe("auditIssue", () => {
   });
 
   it.each(teamLabels)("accepts the %s label", (label) => {
-    expect(audit({ title: `[${label}] Something`, labels: [label] }).ok).toBe(true);
+    expect(audit({ title: "Something", labels: [label] }).ok).toBe(true);
   });
 });
 
 describe("teamOf", () => {
-  it("prefers the single team label", () => {
-    expect(teamOf({ title: "[team-1] x", labels: ["team-2"] }, teamLabels)).toBe("team-2");
+  it("is the single team label", () => {
+    expect(teamOf({ labels: ["team-2", "bug"] }, teamLabels)).toBe("team-2");
   });
 
-  it("falls back to the title prefix", () => {
-    expect(teamOf({ title: "[platform] x", labels: [] }, teamLabels)).toBe("platform");
+  it("ignores a title prefix", () => {
+    const prefixed = { title: "[platform] x", labels: [] };
+    expect(teamOf(prefixed, teamLabels)).toBeNull();
   });
 
-  it("is null when nothing names a team", () => {
-    expect(teamOf({ title: "x", labels: ["bug"] }, teamLabels)).toBeNull();
-    expect(teamOf({ title: "[nope] x", labels: [] }, teamLabels)).toBeNull();
+  it("is null without exactly one team label", () => {
+    expect(teamOf({ labels: ["bug"] }, teamLabels)).toBeNull();
+    expect(teamOf({ labels: ["team-1", "team-2"] }, teamLabels)).toBeNull();
   });
 });
 
 describe("groupByTeam and formatReport", () => {
   const results = [
     audit({ number: 3 }),
-    audit({ number: 7, title: "[team-2] Bad", labels: [] }),
-    audit({ number: 5, title: "No prefix", labels: [] }),
-    audit({ number: 9, title: "[platform] Fine", labels: ["platform"] }),
+    audit({ number: 7, title: "[team-2] Bad" }),
+    audit({ number: 5, title: "No team", labels: [] }),
+    audit({ number: 9, title: "Fine", labels: ["platform"] }),
   ];
   const groups = groupByTeam(results, teamLabels);
 
@@ -109,7 +110,8 @@ describe("groupByTeam and formatReport", () => {
     const md = formatReport(groups, { repo: "o/r", state: "all", generatedAt: "2026-01-01 00:00 UTC" });
     expect(md).toContain("2 of 4 issues pass");
     expect(md).toContain("| (no team) | 1 | 0 | 1 |");
-    expect(md).toContain("- [#7](https://example.test/10) [team-2] Bad (open, someone, labels: none)");
+    expect(md).toContain("- [#7](https://example.test/10) [team-2] Bad (open, someone, labels: team-2)");
+    expect(md).toContain('  - **title:** Drop "[team-2]" from the title');
     expect(md).toContain("  - **labels:** Needs exactly one team label");
     expect(md).toContain("Passing: #3");
   });

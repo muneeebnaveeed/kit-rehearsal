@@ -169,7 +169,7 @@ export function buildIssueUrl(options: IssueLinkOptions): string {
   const url = new URL(`https://github.com/${options.repo}/issues/new`);
   url.searchParams.set("template", "bug.md");
   url.searchParams.set("labels", `bug,${options.teamLabel}`);
-  url.searchParams.set("title", `[${options.teamLabel}] ${report.title}`);
+  url.searchParams.set("title", report.title);
   url.searchParams.set("body", body);
   return url.toString();
 }

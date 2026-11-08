@@ -28,7 +28,7 @@ pnpm workflow:classify --kind issue --json
 
 Read the file named in `template`. Write the issue body to a scratch file (not into the repo) that keeps **every `##` heading, in order, with the exact same text**. Remove the HTML comments.
 
-- **Title:** `[<label>] <short imperative summary>`, for example `[platform] Add the CI workflow`.
+- **Title:** a short imperative summary, for example `Add the CI workflow`. No `[platform]` prefix: the label names the team.
 - **Goal:** what should be true afterwards and why. **What changes:** a short list of concrete changes.
 - **Done when:** checkboxes someone else can verify (`- [ ] ...`), at least one.
 - Type-specific sections (steps to reproduce, pages affected, why now, behaviour that must not change) are required too.

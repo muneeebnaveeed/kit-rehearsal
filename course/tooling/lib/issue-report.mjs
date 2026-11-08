@@ -8,16 +8,13 @@ import { checkIssue } from "../../../tooling/workflow/lib/check-issue.mjs";
 const RULES = new Set(["title", "labels"]);
 
 /**
- * The team an issue belongs to: its team label if it has exactly one, otherwise the label in its
- * `[<team-label>]` title prefix, otherwise none.
- * @param {{ title: string, labels: string[] }} issue
+ * The team an issue belongs to: its team label if it has exactly one, otherwise none.
+ * @param {{ labels: string[] }} issue
  * @param {string[]} teamLabels
  */
 export function teamOf(issue, teamLabels) {
   const labels = issue.labels.filter((l) => teamLabels.includes(l));
-  if (labels.length === 1) return labels[0];
-  const prefix = /^\[([^\]]+)\]/.exec(issue.title.trim())?.[1];
-  return prefix && teamLabels.includes(prefix) ? prefix : null;
+  return labels.length === 1 ? labels[0] : null;
 }
 
 /**

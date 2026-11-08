@@ -6,7 +6,7 @@
 # Syncs run first. A sync opened this hour waits for its approval, so the promotion right after it still says the
 # branch is behind; once the sync merges, an open promotion PR picks it up. A merged sync alone never opens a
 # promotion: team:promote skips a branch whose only changes are merges of main.
-# Needs the PIPELINE_TOKEN secret (KIT_SETUP.md): PRs opened with the built-in token would start no CI.
+# Opens the PRs as the pipeline's GitHub App (KIT_SETUP.md, step 3): PRs opened with the built-in token would start no CI.
 # It only runs when the repository variable PIPELINE is "on" (KIT_SETUP.md, go-live), so the template itself stays idle. Owner: platform team.
 name: Hourly pipeline
 
@@ -22,9 +22,6 @@ concurrency:
   group: hourly-pipeline
   cancel-in-progress: false
 
-env:
-  GH_TOKEN: ${{ secrets.PIPELINE_TOKEN }}
-
 jobs:
   sync:
     name: "sync ${{ matrix.team }}"
@@ -39,10 +36,19 @@ jobs:
         with:
           fetch-depth: 0
       - uses: ./.github/actions/setup
-      - name: Check the token
-        run: test -n "$GH_TOKEN" || { echo "::error::Set the PIPELINE_TOKEN secret (KIT_SETUP.md, step 3)."; exit 1; }
+      - name: Check the app
+        run: test -n "$CLIENT_ID" || { echo "::error::Set the PIPELINE_APP_CLIENT_ID variable and the PIPELINE_APP_KEY secret (KIT_SETUP.md, step 3)."; exit 1; }
+        env:
+          CLIENT_ID: ${{ vars.PIPELINE_APP_CLIENT_ID }}
+      - id: app
+        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
+        with:
+          client-id: ${{ vars.PIPELINE_APP_CLIENT_ID }}
+          private-key: ${{ secrets.PIPELINE_APP_KEY }}
       - name: Open the sync PR, or say why not
         run: node tooling/workflow/pipeline.ts sync ${{ matrix.team }}
+        env:
+          GH_TOKEN: ${{ steps.app.outputs.token }}
 
   promote:
     name: "promote ${{ matrix.team }}"
@@ -59,7 +65,16 @@ jobs:
         with:
           fetch-depth: 0
       - uses: ./.github/actions/setup
-      - name: Check the token
-        run: test -n "$GH_TOKEN" || { echo "::error::Set the PIPELINE_TOKEN secret (KIT_SETUP.md, step 3)."; exit 1; }
+      - name: Check the app
+        run: test -n "$CLIENT_ID" || { echo "::error::Set the PIPELINE_APP_CLIENT_ID variable and the PIPELINE_APP_KEY secret (KIT_SETUP.md, step 3)."; exit 1; }
+        env:
+          CLIENT_ID: ${{ vars.PIPELINE_APP_CLIENT_ID }}
+      - id: app
+        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
+        with:
+          client-id: ${{ vars.PIPELINE_APP_CLIENT_ID }}
+          private-key: ${{ secrets.PIPELINE_APP_KEY }}
       - name: Open the promotion PR, or say why not
         run: node tooling/workflow/pipeline.ts promote ${{ matrix.team }}
+        env:
+          GH_TOKEN: ${{ steps.app.outputs.token }}

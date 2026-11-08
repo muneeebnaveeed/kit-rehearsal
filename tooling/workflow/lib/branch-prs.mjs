@@ -145,8 +145,8 @@ export function syncPr({ templates, issue, team, behind, prs, conflicts }) {
 
 /**
  * The promotion of a team's integration branch into main. check:pr treats a PR from feature/team-N
- * like work (Closes #N, one of the five work templates); it is a chore, like sync PRs. Merging it deploys
- * to production.
+ * like work (Closes #N, one of the five work templates); it is a chore, like sync PRs, and platform work
+ * like them, since it merges every owner's files. Merging it deploys to production.
  * @param {{
  *   templates: Record<string, string>,
  *   issue: Issue,
@@ -172,7 +172,7 @@ export function promotePr({ templates, issue, team, ahead, behind, prs, conflict
   const body = fillTemplate(templates.chore, {
     sections: {
       "Linked issue": `Refs #${issue.number}`,
-      Team: team,
+      Team: "platform",
       Summary: lines.join("\n\n"),
       Impact: [
         `Once merged, ${team}'s changes deploy to production. Other teams get them when \`main\` is merged back into their feature branches (\`pnpm branches:sync\`).`,
@@ -199,8 +199,8 @@ export function promotePr({ templates, issue, team, ahead, behind, prs, conflict
     type: "chore",
     head: branch,
     base: "main",
-    title: `chore(${team}): merge ${branch} into main`,
-    labels: [team],
+    title: `chore(platform): merge ${branch} into main`,
+    labels: ["platform"],
     body,
   };
 }

@@ -42,7 +42,7 @@ Every team has its own GitHub Project with the issues and pull requests that car
 We track progress with GitHub issues and pull requests.
 
 1. **Issue first, then work.** Before you start a piece of work, open an issue:
-   - Title starts with your team label: `[team-2] Short description`, `[team-instructor] ...`
+   - A short title, with no team prefix: the label names the team.
    - Describe the **goal** and the **done when** criteria (a short checklist).
    - Add your team label and assign the issue to whoever works on it.
 2. **Every pull request closes an issue.** Put `Closes #<issue number>` in the PR description, so the issue is closed automatically when the PR is merged.
@@ -121,7 +121,7 @@ It never ticks checklist items, writes a summary, test steps or screenshots, or 
 
 ### Checking issue labels and titles
 
-The evaluation attributes work to teams through the team label and the `[<team-label>]` title prefix of the issues. One command lists, per team, which issues break those rules, and why:
+The evaluation attributes work to teams through the team label of the issues. One command lists, per team, which issues break those rules, and why:
 
 ```bash
 node course/tooling/issue-report.mjs                  # every issue: open and closed
@@ -136,11 +136,11 @@ It needs the [GitHub CLI](https://cli.github.com/), logged in with `gh auth logi
 An issue passes when both of these are true (the rules from "Issue first" in [CLAUDE.md](../CLAUDE.md), the same ones `pnpm check:issue` enforces):
 
 - It has **exactly one** team label: `team-1`, `team-2`, `team-3`, `team-4`, `platform` or `team-instructor`. Other labels, such as `bug`, are fine.
-- Its title starts with `[<team-label>]`, and that prefix is the same as the label (`[team-2]` with the label `team-2`).
+- Its title has no `[team-2]` prefix: the label already names the team.
 
-An issue is listed under its team label. If it has none or several, it is listed under the team named in its title prefix, and under *(no team)* if there is none. The report only looks at the title and the labels, not the description, because older issues were written before the issue templates existed.
+An issue is listed under its team label, and under *(no team)* if it has none or several. The report only looks at the title and the labels, not the description, because older issues were written before the issue templates existed.
 
-**When to run it:** the instructors run `node course/tooling/issue-report.mjs --state open --failing` at the end of each day, and once more without options before the evaluation. Fix what it lists by adding the missing team label or editing the title, or let `--fix` do it; closed issues can be fixed too. Nothing runs automatically, and without `--fix --apply` nothing is posted to the issues.
+**When to run it:** the instructors run `node course/tooling/issue-report.mjs --state open --failing` at the end of each day, and once more without options before the evaluation. Fix what it lists by adding the missing team label or removing the title prefix, or let `--fix` do it; closed issues can be fixed too. Nothing runs automatically, and without `--fix --apply` nothing is posted to the issues.
 
 #### Fixing issues automatically
 
@@ -149,8 +149,7 @@ node course/tooling/issue-report.mjs --fix            # dry run: what would chan
 node course/tooling/issue-report.mjs --fix --apply    # make the changes on GitHub
 ```
 
-- **Missing team label:** added when the title prefix names a team, also a malformed one such as `[team : 4]` or `[Team 4]`.
-- **Missing or malformed title prefix:** set to `[<team-label>]` when the issue has exactly one team label.
+- **Title prefix:** removed. When the issue has no team label, the team the prefix names is added as its label, also from a malformed prefix such as `[team : 4]` or `[Team 4]`.
 - **Not fixed:** a prefix that names another team than the label, several team labels, or an issue that names no team at all. Which team is right is for the author to say, so on open issues these are listed in a comment, which the next run updates instead of repeating. Closed issues never get a comment.
 
 Run the issue fix before the PR fix: the PR report also checks that the linked issue has the same team label.
@@ -173,7 +172,7 @@ The score uses the criteria above that can be measured per person, from 0 to 10 
 | Area | Points | Rule |
 |---|---|---|
 | **Delivery** | 0–4 | Merged PRs authored: 5 or more → 4, 2–4 → 3, 1 → 2. No merged PR but an open one → 1. |
-| **Process** | 0–3 | +1 if at least half of your PRs pass the PR documentation report; +1 if at least 80% of your commits reference an issue (`Refs #N` on its own line); +1 if every issue you opened has a team label and a matching `[team-…]` title. |
+| **Process** | 0–3 | +1 if at least half of your PRs pass the PR documentation report; +1 if at least 80% of your commits reference an issue (`Refs #N` on its own line); +1 if every issue you opened has exactly one team label and no team prefix in its title. |
 | **Collaboration** | 0–3 | Reviewed other people's PRs: 5 or more → 2, 1–4 → 1. +1 for commenting on other people's issues or PRs. |
 
 Points become the score: 0 → **1**, 1–2 → **2**, 3–4 → **3**, 5–7 → **4**, 8–10 → **5**. Instructors, organizer accounts and AI agents are not scored.
