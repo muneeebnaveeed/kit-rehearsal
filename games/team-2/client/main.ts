@@ -281,3 +281,5 @@ function safeSession<T>(fn: () => T): T | null {
 main().catch((err) => {
   app.innerHTML = `<div class="bad">Can't reach the server at ${SERVER_URL}</div><div>${String(err)}</div>`;
 });
+
+var unused_rehearsal_lint_error = 1
