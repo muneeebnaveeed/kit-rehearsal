@@ -1,4 +1,5 @@
 import { spawnSync } from "node:child_process";
+import { readFileSync } from "node:fs";
 import { createRailwayContext, type ProjectDefinition, type ServiceNode } from "railway/iac";
 import { describe, expect, it } from "vitest";
 import program, {
@@ -9,6 +10,9 @@ import program, {
   GATEWAY,
   gameVariables,
 } from "./railway.ts";
+
+// The repository the admin set in kit.json (OWNER/REPO until then).
+const KIT = JSON.parse(readFileSync(new URL("../kit.json", import.meta.url), "utf8")) as { repo: string };
 
 async function plan(environment: string): Promise<ServiceNode[]> {
   const definition: ProjectDefinition = await program(createRailwayContext({ environment }), (name, def) => ({
@@ -63,7 +67,7 @@ describe.each(Object.keys(ENVIRONMENTS) as EnvironmentName[])("railway.ts in %s"
 
   it("deploys the right branch, and only after CI passed", async () => {
     for (const s of await plan(environment)) {
-      expect(s.source).toMatchObject({ type: "github", repo: "OWNER/REPO", branch, checkSuites: true });
+      expect(s.source).toMatchObject({ type: "github", repo: KIT.repo, branch, checkSuites: true });
     }
   });
 
