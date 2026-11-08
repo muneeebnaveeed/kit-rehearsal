@@ -1,7 +1,7 @@
 // `pnpm pipeline promote|sync <team-N>`: one step of the hourly pipeline (.github/workflows/pipeline.yml).
 //
-//   1. finds the step's tracking issue ("[team-N] Promotions from feature/team-N", or
-//      "[platform] Syncs from main into feature/team-N"), and opens it when it doesn't exist yet
+//   1. finds the step's tracking issue ("Promotions from feature/team-N into main", or
+//      "Syncs from main into feature/team-N", both labelled platform), and opens it when it doesn't exist yet
 //   2. runs pnpm team:promote, or pnpm branches:sync for that one team, with that issue and --auto-merge
 //   3. reports what happened on the run's summary page: opened, opened without auto-merge (a sync that
 //      conflicts), skipped (nothing new, a PR already open, the branch missing) or failed

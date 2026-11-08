@@ -86,7 +86,7 @@ jobs:
             --jq ".[] | select(.user.login == \"github-actions[bot]\" and (.body | contains(\"$MARK\"))) | .id" | tail -n 1)
           if [ "$OUTCOME" = "failure" ]; then
             BODY="$MARK
-          The \`team-instructor\` label and the \`[team-instructor]\` title are reserved for the instructors (\`.github/instructors.json\`). Please use your own team's label and title prefix. To change files under \`course/\` from another team, use your team's label and add a line \`Cross-team: <why>\` to the issue. (Automated check: instructor gate.)"
+          The \`team-instructor\` label and title are reserved for the instructors (\`.github/instructors.json\`). Please use your own team's label. To change files under \`course/\` from another team, use your team's label and add a line \`Cross-team: <why>\` to the issue. (Automated check: instructor gate.)"
           else
             [ -n "$ID" ] || exit 0
             BODY="$MARK

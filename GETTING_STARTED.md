@@ -86,7 +86,7 @@ team-N/<issue>-<description>  →  feature/team-N  →  main
 - **`feature/team-N` → `main`:** when the team's work is ready and CI is green. The hourly pipeline opens this PR and a teammate approves it. Merging it deploys your game to production.
 - Platform work (`platform/<issue>-…`) goes straight into `main`.
 
-1. **Open an issue.** Title `[team-N] Short description`, one label (`team-N`), a goal and a "done when" checklist. Assign yourself.
+1. **Open an issue.** A short title, one label (`team-N`), a goal and a "done when" checklist. Assign yourself.
 2. **Create a branch** from your team's up-to-date `feature/team-N`, named after the label and the issue:
 
    ```bash
