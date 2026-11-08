@@ -1,0 +1,87 @@
+# Keeps every pull request's status labels up to date (pnpm labels:prs):
+# stackpile and one of waiting-on.author / .review / .merge. See "Labels" in CLAUDE.md.
+#
+# Every run labels all PRs (a full pass costs about one GitHub query per 50 PRs): on every PR, review and comment
+# event, so labels change within a minute everywhere, every 10 minutes, and on demand. Scheduled runs alone
+# are not enough: GitHub can delay or skip them for a long time.
+#
+# Security: pull_request_target runs this workflow as it is on main, with a token that can write labels,
+# also for PRs from forks. It checks out main (the default for pull_request_target), never the PR's code,
+# and only reads PR metadata through the API, so a PR cannot change what runs here.
+# Owner: platform team.
+name: PR labels
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+  # Every activity type of every PR event Actions offers. Resolving a review thread has no event, so the
+  # 10-minute run catches that. The labeller's own label changes use GITHUB_TOKEN, which starts no runs,
+  # so labeled/unlabeled can't loop.
+  pull_request_target:
+    types:
+      [
+        assigned,
+        unassigned,
+        labeled,
+        unlabeled,
+        opened,
+        edited,
+        closed,
+        reopened,
+        synchronize,
+        converted_to_draft,
+        ready_for_review,
+        locked,
+        unlocked,
+        review_requested,
+        review_request_removed,
+        auto_merge_enabled,
+        auto_merge_disabled,
+        milestoned,
+        demilestoned,
+        enqueued,
+        dequeued,
+      ]
+  pull_request_review:
+    types: [submitted, edited, dismissed]
+  pull_request_review_comment:
+    types: [created, edited, deleted]
+  issue_comment:
+    types: [created, edited, deleted]
+
+# One queue for every trigger: a newer run supersedes a running one, so a burst of events ends with one
+# full, up-to-date pass.
+concurrency:
+  group: pr-labels
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+jobs:
+  label:
+    name: update PR labels
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    # Comments on plain issues don't touch any PR. A review or review comment on a fork's PR only gets a
+    # read-only token; the next run from any other event labels it instead.
+    if: >-
+      (github.event_name != 'issue_comment' || github.event.issue.pull_request) &&
+      (!startsWith(github.event_name, 'pull_request_review') ||
+      github.event.pull_request.head.repo.full_name == github.repository)
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+
+      # The labeller has no dependencies, so there is no install step. It reads nothing from the event:
+      # every run labels all open PRs (and clears status labels from closed ones).
+      - name: Update labels
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node tooling/workflow/pr-labels.mjs

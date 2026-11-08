@@ -1,0 +1,5 @@
+{
+  "extends": "../tooling/tsconfig.base.json",
+  "compilerOptions": { "types": ["node"], "erasableSyntaxOnly": true },
+  "include": ["*.ts"]
+}

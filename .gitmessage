@@ -1,0 +1,15 @@
+type(scope): subject
+
+Why this change is needed. The diff shows what changed; say why.
+
+Refs #
+# Format: type(scope): subject   (Conventional Commits, checked by "pnpm check:commit")
+#
+#   type   feat | fix | docs | refactor | chore | ci | build | test | perf
+#   scope  your team label: team-1..4, platform or team-instructor
+#   subject  imperative mood, lowercase, at most 72 characters, no trailing period
+#            ("add login page", not "Added login page.")
+#
+# The body needs "Refs #<issue>" (or "Closes #<issue>") on its own line.
+# Not sure about the type? Run: pnpm workflow:classify --kind commit --staged
+# Lines starting with "#" are removed when you save.

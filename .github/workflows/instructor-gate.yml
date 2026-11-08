@@ -1,0 +1,104 @@
+# The team-instructor identity (the label, the title forms and the Team section) is reserved for the
+# instructors listed in .github/instructors.json. Two jobs, because they need different rights:
+#   instructor gate           pull requests: the job fails, which blocks the merge once the ruleset requires it.
+#                             Its name is what the rulesets require, so keep it.
+#   instructor gate (issues)  issues cannot be blocked, so the job fails and leaves one comment for the author,
+#                             and updates that comment to "resolved" once the issue is fixed. It alone may write issues.
+# Owner: platform team. The instructors review changes to this file (.github/CODEOWNERS).
+
+name: Instructor gate
+
+on:
+  # pull_request_target runs THIS FILE from the base branch, not from the PR, so a PR cannot edit the gate that
+  # judges it (with a plain pull_request trigger, changing the step to `exit 0` would pass). That is only safe
+  # because no job checks out or runs the PR's code: the title, labels and body reach the script through the
+  # event file, and the script comes from main. Keep it that way. A consequence: a PR into a branch that does
+  # not have this file yet (a feature/team-N that has not merged main) is not checked until it does.
+  pull_request_target:
+    types: [opened, edited, reopened, synchronize, labeled, unlabeled]
+  issues:
+    types: [opened, edited, labeled]
+
+# No concurrency group on purpose: a cancelled duplicate run would stay on the PR next to the real one.
+
+permissions:
+  contents: read
+
+jobs:
+  instructor-gate:
+    name: instructor gate
+    if: ${{ github.event_name == 'pull_request_target' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      # The script and the list of instructors always come from main (the reviewed branch), never from
+      # the PR being judged, so a PR cannot add its author to the list and pass its own check.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          persist-credentials: false
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+
+      # The title, labels and body reach the script through the event file, never through a shell expression.
+      - name: Instructor gate
+        run: node tooling/workflow/check-instructor.mjs --event "$GITHUB_EVENT_PATH"
+
+  instructor-gate-issue:
+    name: instructor gate (issues)
+    if: ${{ github.event_name == 'issues' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          persist-credentials: false
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+
+      - name: Instructor gate
+        id: gate
+        continue-on-error: true
+        run: node tooling/workflow/check-instructor.mjs --event "$GITHUB_EVENT_PATH"
+
+      # One comment, found by its hidden marker so no other bot comment is ever touched: created when the issue
+      # breaks the rule, updated to "resolved" when it no longer does.
+      - name: Tell the author
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          NUMBER: ${{ github.event.issue.number }}
+          OUTCOME: ${{ steps.gate.outcome }}
+        run: |
+          set -euo pipefail
+          MARK='<!-- instructor-gate -->'
+          ID=$(gh api "repos/$REPO/issues/$NUMBER/comments" --paginate \
+            --jq ".[] | select(.user.login == \"github-actions[bot]\" and (.body | contains(\"$MARK\"))) | .id" | tail -n 1)
+          if [ "$OUTCOME" = "failure" ]; then
+            BODY="$MARK
+          The \`team-instructor\` label and the \`[team-instructor]\` title are reserved for the instructors (\`.github/instructors.json\`). Please use your own team's label and title prefix. To change files under \`course/\` from another team, use your team's label and add a line \`Cross-team: <why>\` to the issue. (Automated check: instructor gate.)"
+          else
+            [ -n "$ID" ] || exit 0
+            BODY="$MARK
+          Resolved: this issue no longer uses the \`team-instructor\` identity. (Automated check: instructor gate.)"
+          fi
+          if [ -n "$ID" ]; then
+            gh api -X PATCH "repos/$REPO/issues/comments/$ID" -f body="$BODY" > /dev/null
+          else
+            gh api -X POST "repos/$REPO/issues/$NUMBER/comments" -f body="$BODY" > /dev/null
+          fi
+
+      # The comment is written either way; the run still turns red while the issue breaks the rule.
+      - name: Fail while the issue breaks the rule
+        if: ${{ steps.gate.outcome == 'failure' }}
+        run: exit 1

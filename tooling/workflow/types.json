@@ -1,0 +1,76 @@
+{
+  "$comment": "Single source of truth for the workflow tooling: the change types, their templates and commit types. Read by classify.mjs and the check:* scripts.",
+  "teamLabels": ["team-1", "team-2", "team-3", "team-4", "platform", "team-instructor"],
+  "types": {
+    "feature": {
+      "issueTemplate": ".github/ISSUE_TEMPLATE/feature.md",
+      "prTemplate": ".github/PULL_REQUEST_TEMPLATE/feature.md",
+      "commitTypes": ["feat"]
+    },
+    "bug": {
+      "issueTemplate": ".github/ISSUE_TEMPLATE/bug.md",
+      "prTemplate": ".github/PULL_REQUEST_TEMPLATE/bug.md",
+      "commitTypes": ["fix"]
+    },
+    "docs": {
+      "issueTemplate": ".github/ISSUE_TEMPLATE/docs.md",
+      "prTemplate": ".github/PULL_REQUEST_TEMPLATE/docs.md",
+      "commitTypes": ["docs"]
+    },
+    "chore": {
+      "issueTemplate": ".github/ISSUE_TEMPLATE/chore.md",
+      "prTemplate": ".github/PULL_REQUEST_TEMPLATE/chore.md",
+      "commitTypes": ["chore", "ci", "build", "test", "perf"]
+    },
+    "refactor": {
+      "issueTemplate": ".github/ISSUE_TEMPLATE/refactor.md",
+      "prTemplate": ".github/PULL_REQUEST_TEMPLATE/refactor.md",
+      "commitTypes": ["refactor"]
+    },
+    "sync": {
+      "issueTemplate": null,
+      "prTemplate": ".github/PULL_REQUEST_TEMPLATE/sync.md",
+      "commitTypes": []
+    }
+  },
+  "commitPrefixToType": {
+    "feat": "feature",
+    "fix": "bug",
+    "docs": "docs",
+    "refactor": "refactor",
+    "chore": "chore",
+    "ci": "chore",
+    "build": "chore",
+    "test": "chore",
+    "perf": "chore"
+  },
+  "prefixPrecedence": ["feat", "fix", "refactor", "perf", "docs", "test", "build", "ci", "chore"],
+  "docsPaths": ["course/**", "**/*.md", "docs/**"],
+  "choreRules": [
+    {
+      "commitType": "ci",
+      "paths": [".github/**"]
+    },
+    {
+      "commitType": "build",
+      "paths": ["package.json", "pnpm-lock.yaml", "pnpm-workspace.yaml"]
+    },
+    {
+      "commitType": "chore",
+      "paths": [
+        ".claude/**",
+        ".vscode/**",
+        ".editorconfig",
+        ".gitattributes",
+        ".gitignore",
+        ".nvmrc",
+        ".env.example",
+        "biome.json",
+        "vitest.config.ts",
+        "tooling/**"
+      ]
+    }
+  ],
+  "testPaths": ["**/*.test.ts", "**/*.test.mjs", "e2e/**"],
+  "codePaths": ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx", "**/*.mjs", "**/*.css", "**/*.html"]
+}

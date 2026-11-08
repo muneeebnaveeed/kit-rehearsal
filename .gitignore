@@ -1,0 +1,32 @@
+node_modules/
+dist/
+coverage/
+.env
+.env.*
+!.env.example
+*.log
+.DS_Store
+# QA artifacts
+.qa/
+replays/
+playwright-report/
+test-results/
+# Editor: share only the team's VS Code settings and extension list
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+
+# JetBrains IDEs and editor swap files
+.idea/
+*.swp
+
+# OS files
+Thumbs.db
+
+# Tool caches
+.vite/
+*.tsbuildinfo
+.pnpm-store/
+
+# Private instructor reports (student scores): never commit, the repository is public
+.private/

@@ -1,0 +1,11 @@
+{
+  "instructors": ["instructor-login"],
+  "students": [
+    {
+      "login": "student-login",
+      "name": "Example Student",
+      "nickname": "Sam",
+      "team": "team-1"
+    }
+  ]
+}

@@ -1,0 +1,69 @@
+{
+  "$comment": "Which label owns which path. Read by the ownership preflight. First matching rule wins.",
+  "rules": [
+    {
+      "path": "games/team-1/**",
+      "owner": "team-1"
+    },
+    {
+      "path": "games/team-2/**",
+      "owner": "team-2"
+    },
+    {
+      "path": "games/team-3/**",
+      "owner": "team-3"
+    },
+    {
+      "path": "games/team-4/**",
+      "owner": "team-4"
+    },
+    {
+      "path": "course/**",
+      "owner": "team-instructor"
+    },
+    {
+      "path": "server/**",
+      "owner": "platform"
+    },
+    {
+      "path": "tooling/**",
+      "owner": "platform"
+    },
+    {
+      "path": "package.json",
+      "owner": "platform"
+    },
+    {
+      "path": "pnpm-workspace.yaml",
+      "owner": "platform"
+    },
+    {
+      "path": "pnpm-lock.yaml",
+      "owner": "shared"
+    },
+    {
+      "path": "biome.json",
+      "owner": "platform"
+    },
+    {
+      "path": "vitest.config.ts",
+      "owner": "platform"
+    },
+    {
+      "path": ".github/**",
+      "owner": "platform"
+    },
+    {
+      "path": ".railway/**",
+      "owner": "platform"
+    },
+    {
+      "path": ".claude/**",
+      "owner": "platform"
+    },
+    {
+      "path": "**",
+      "owner": "shared"
+    }
+  ]
+}

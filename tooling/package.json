@@ -1,0 +1,16 @@
+{
+  "name": "@kit/tooling",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Shared TypeScript config for every game. Extend tsconfig.base.json from games/<team>/tsconfig.json.",
+  "files": [
+    "tsconfig.base.json",
+    "ownership.json",
+    "check-node.mjs",
+    "check-setup.mjs"
+  ],
+  "devDependencies": {
+    "zod": "4.6.7"
+  }
+}

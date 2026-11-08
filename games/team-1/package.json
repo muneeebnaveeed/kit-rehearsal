@@ -1,0 +1,26 @@
+{
+  "name": "@team-1/game",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "The game of team-1. Starts as a copy of server/template.",
+  "scripts": {
+    "dev": "pnpm run \"/^dev:/\"",
+    "dev:server": "tsx watch --clear-screen=false server.ts",
+    "dev:client": "vite",
+    "build": "vite build",
+    "start": "tsx server.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@colyseus/schema": "5.0.45",
+    "@colyseus/sdk": "0.18.9",
+    "@kit/core": "workspace:*",
+    "@kit/host": "workspace:*",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@kit/tooling": "workspace:*",
+    "vite": "8.3.6"
+  }
+}

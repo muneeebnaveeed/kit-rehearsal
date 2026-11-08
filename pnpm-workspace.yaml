@@ -1,0 +1,17 @@
+packages:
+  - server/core
+  - server/gateway
+  - server/host
+  - server/template
+  - tooling
+  - games/team-*
+
+# @colyseus/core declares express as an optional peer, and @colyseus/ws-transport (itself an optional
+# peer of core) requires it. pnpm then resolves two copies of @colyseus/core, one with express and one
+# without, and rooms end up registered in a different matchmaker than the WebSocket transport uses:
+# every join fails with "seat reservation expired". Making express a real dependency of core leaves
+# exactly one copy.
+packageExtensions:
+  "@colyseus/core@0.18.27":
+    dependencies:
+      express: "5.3.0"

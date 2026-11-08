@@ -1,0 +1,80 @@
+{
+  "$comment": "Every label in the repo. `pnpm labels:sync` makes GitHub match this file (dry run by default, --apply to change). `remove` lists labels to delete. Only team labels and the PR status labels exist; anything else is noise. See \"Labels\" in CLAUDE.md.",
+  "groups": [
+    {
+      "group": "team",
+      "rule": "exactly one on every issue and PR",
+      "labels": [
+        {
+          "name": "team-1",
+          "color": "1f77b4",
+          "description": "Owned by Team 1"
+        },
+        {
+          "name": "team-2",
+          "color": "2ca02c",
+          "description": "Owned by Team 2"
+        },
+        {
+          "name": "team-3",
+          "color": "d62728",
+          "description": "Owned by Team 3"
+        },
+        {
+          "name": "team-4",
+          "color": "9467bd",
+          "description": "Owned by Team 4"
+        },
+        {
+          "name": "platform",
+          "color": "5319e7",
+          "description": "Shared platform in server/: stack, infra, CI, tooling"
+        },
+        {
+          "name": "team-instructor",
+          "color": "6e7781",
+          "description": "Owned by the instructor team"
+        }
+      ]
+    },
+    {
+      "group": "status",
+      "rule": "on open PRs only; set by the labeller every 10 minutes. At most one waiting-on.* label",
+      "labels": [
+        {
+          "name": "stackpile",
+          "color": "fbca04",
+          "description": "Stacked on another PR: its base is not main or a feature/team-N branch"
+        },
+        {
+          "name": "waiting-on.author",
+          "color": "d93f0b",
+          "description": "Changes requested, an unresolved review thread, or a draft"
+        },
+        {
+          "name": "waiting-on.review",
+          "color": "fef2c0",
+          "description": "Needs an approving review from someone other than the author"
+        },
+        {
+          "name": "waiting-on.merge",
+          "color": "0e8a16",
+          "description": "Approved with nothing open: ready to merge"
+        }
+      ]
+    }
+  ],
+  "remove": [
+    "accessibility",
+    "bug",
+    "cross-team",
+    "documentation",
+    "duplicate",
+    "enhancement",
+    "good first issue",
+    "help wanted",
+    "invalid",
+    "question",
+    "wontfix"
+  ]
+}

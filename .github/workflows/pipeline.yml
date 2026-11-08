@@ -1,0 +1,65 @@
+# The hourly pipeline: keeps each team branch current with main (sync PRs main -> feature/team-N), then promotes
+# each team branch into main, which deploys it to production, by opening the PRs with auto-merge on. A sync that
+# conflicts opens without auto-merge, because someone must resolve it on a team branch. Nothing merges without a
+# person: the rulesets still need an approving review and green checks, and GitHub merges once both are in place.
+# Each step says on the run's summary page what it did.
+# Syncs run first. A sync opened this hour waits for its approval, so the promotion right after it still says the
+# branch is behind; once the sync merges, an open promotion PR picks it up. A merged sync alone never opens a
+# promotion: team:promote skips a branch whose only changes are merges of main.
+# Needs the PIPELINE_TOKEN secret (KIT_SETUP.md): PRs opened with the built-in token would start no CI.
+# It only runs when the repository variable PIPELINE is "on" (KIT_SETUP.md, go-live), so the template itself stays idle. Owner: platform team.
+name: Hourly pipeline
+
+on:
+  schedule:
+    - cron: "0 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: hourly-pipeline
+  cancel-in-progress: false
+
+env:
+  GH_TOKEN: ${{ secrets.PIPELINE_TOKEN }}
+
+jobs:
+  sync:
+    name: "sync ${{ matrix.team }}"
+    if: ${{ vars.PIPELINE == 'on' }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        team: [team-1, team-2, team-3, team-4]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - uses: ./.github/actions/setup
+      - name: Check the token
+        run: test -n "$GH_TOKEN" || { echo "::error::Set the PIPELINE_TOKEN secret (KIT_SETUP.md, step 3)."; exit 1; }
+      - name: Open the sync PR, or say why not
+        run: node tooling/workflow/pipeline.ts sync ${{ matrix.team }}
+
+  promote:
+    name: "promote ${{ matrix.team }}"
+    needs: sync
+    # A failed sync doesn't hold back the promotions.
+    if: ${{ !cancelled() && vars.PIPELINE == 'on' }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        team: [team-1, team-2, team-3, team-4]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - uses: ./.github/actions/setup
+      - name: Check the token
+        run: test -n "$GH_TOKEN" || { echo "::error::Set the PIPELINE_TOKEN secret (KIT_SETUP.md, step 3)."; exit 1; }
+      - name: Open the promotion PR, or say why not
+        run: node tooling/workflow/pipeline.ts promote ${{ matrix.team }}

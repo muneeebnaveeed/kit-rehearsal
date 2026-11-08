@@ -1,0 +1,5 @@
+{
+  "$comment": "Set these once, right after creating a repository from this template (see KIT_SETUP.md). Everything that needs the repository or the Railway project name reads it from here.",
+  "repo": "OWNER/REPO",
+  "railwayProject": "hackathon"
+}

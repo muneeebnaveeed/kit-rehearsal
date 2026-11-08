@@ -1,0 +1,4 @@
+{
+  "$comment": "GitHub accounts allowed to use the team-instructor identity: the label, the [team-instructor] / (team-instructor) title forms and the Team section. Keep .github/CODEOWNERS in sync (a test checks it). Changing this file needs an instructor's review.",
+  "logins": ["instructor-login"]
+}

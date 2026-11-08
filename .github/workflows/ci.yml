@@ -1,0 +1,87 @@
+# CI for the shared workspace (platform in server/, team games in games/team-N/).
+# Every game is a workspace package, so a platform change is only green when every game still builds.
+# One job per check, so a pull request shows exactly which one failed. Linux only: every game deploys
+# to Railway, which runs Linux. Owner: platform team.
+#
+# The job names (emoji included) are the required status checks in .github/rulesets/*.json and
+# REQUIRED_CHECKS in tooling/workflow/lib/required-checks.mjs; required-checks.test.ts fails if they drift.
+name: CI
+
+on:
+  pull_request:
+  # main too: Railway's Wait for CI only waits for check suites that run on the deployed branch.
+  push:
+    branches: [main]
+
+# A new push to the same PR cancels the run still in progress for it.
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  # Not on sync PRs (main -> feature/team-N, head_ref main): their head is main itself, so their results would land on
+  # main's commit next to the push run, and Railway's Wait for CI skips a deploy if one fails.
+  setup:
+    # Node/pnpm pins, LF line endings, no file names that differ only by case.
+    name: "🧰 setup"
+    if: ${{ github.head_ref != 'main' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: ./.github/actions/setup
+      - run: pnpm check:setup --ci
+
+  config:
+    # Each game's config/game.json against its config schema.
+    name: "📝 config"
+    if: ${{ github.head_ref != 'main' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: ./.github/actions/setup
+      - run: pnpm check:config
+
+  lint:
+    name: "🧹 lint"
+    if: ${{ github.head_ref != 'main' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: ./.github/actions/setup
+      - run: pnpm lint
+
+  typecheck:
+    name: "🔎 typecheck"
+    if: ${{ github.head_ref != 'main' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: ./.github/actions/setup
+      - run: pnpm typecheck
+
+  test:
+    name: "🧪 test"
+    if: ${{ github.head_ref != 'main' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: ./.github/actions/setup
+      - run: pnpm test
+
+  build:
+    name: "📦 build"
+    if: ${{ github.head_ref != 'main' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: ./.github/actions/setup
+      - run: pnpm build

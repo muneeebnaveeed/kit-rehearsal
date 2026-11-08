@@ -1,0 +1,11 @@
+{
+  // Typechecks every TypeScript file in the QA tooling. The .mjs scripts are typed through allowJs inference.
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2023", "DOM"],
+    "types": ["node"],
+    "allowJs": true,
+    "checkJs": false
+  },
+  "include": ["*.ts", "lib/*.ts"]
+}

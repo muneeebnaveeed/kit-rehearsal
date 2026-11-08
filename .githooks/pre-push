@@ -1,0 +1,61 @@
+#!/usr/bin/env node
+// git pre-push hook, switched on by `pnpm install` (tooling/install-hooks.mjs).
+// Runs the fast checks before anything leaves your machine: `pnpm preflight:quick` (lint, typecheck,
+// folder ownership) and, on a work branch, `pnpm check:branch --offline`. CI runs the full set.
+// The checks look at your working tree, so they only run when you push the commit you have checked out,
+// and a failure doesn't block the push while you have uncommitted changes (they may be the cause).
+// Skip once with `git push --no-verify`.
+import { execFileSync, spawnSync } from "node:child_process";
+import { readFileSync } from "node:fs";
+import { EXIT } from "../tooling/workflow/lib/args.mjs";
+import { issueFromBranch, parsePushUpdates, planPush } from "../tooling/workflow/lib/hooks.mjs";
+
+const git = (...args) => {
+  try {
+    return execFileSync("git", args, { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }).trim();
+  } catch {
+    return null;
+  }
+};
+
+let stdin = "";
+try {
+  stdin = readFileSync(0, "utf8");
+} catch {}
+
+const plan = planPush({ updates: parsePushUpdates(stdin), headSha: git("rev-parse", "HEAD") });
+if (!plan.run) {
+  console.error(`pre-push: ${plan.reason}`);
+  process.exit(0);
+}
+
+/** @returns {number} the exit code */
+const run = (args) => {
+  const r = spawnSync("pnpm", args, { stdio: "inherit", shell: process.platform === "win32" });
+  if (r.error?.code === "ENOENT") {
+    console.error("pre-push: pnpm not found, so the checks were skipped. Install it (see GETTING_STARTED.md).");
+    process.exit(0);
+  }
+  return r.status ?? 1;
+};
+
+const branch = git("symbolic-ref", "--short", "HEAD") ?? "";
+// No pnpm flags before the script name: newer pnpm releases reject the old short ones.
+let code = run(["run", "preflight:quick"]);
+if (code === 0 && issueFromBranch(branch) !== null) code = run(["run", "check:branch", "--offline"]);
+if (code === 0) process.exit(0);
+
+if (code === EXIT.environment) {
+  console.error(
+    "\npre-push: the checks could not run on this machine (see the error above, e.g. a base branch that isn't fetched), so the push goes ahead. CI checks it.\n",
+  );
+  process.exit(0);
+}
+if (git("status", "--porcelain")) {
+  console.error(
+    "\npre-push: the checks failed, but you have uncommitted changes, which the checks saw too, so the push goes ahead. Commit or stash them to check exactly what you push. CI checks the pushed commits.\n",
+  );
+  process.exit(0);
+}
+console.error('\npre-push: fix the problems above and push again (or skip this check once with "git push --no-verify").\n');
+process.exit(1);

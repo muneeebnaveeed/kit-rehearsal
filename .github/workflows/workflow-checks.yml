@@ -1,0 +1,88 @@
+# Checks that every pull request and its commits follow the workflow: Conventional title, one team label, branch and base
+# branch names, template fields filled, linked issue, ticked checklist (pnpm check:pr).
+# Separate from ci.yml so a template problem is reported on its own. Owner: platform team.
+name: Workflow checks
+
+on:
+  pull_request:
+    # "edited" re-runs the check when the title or description is fixed.
+    types: [opened, edited, synchronize, reopened, labeled, unlabeled]
+
+# No concurrency group on purpose. Opening a PR with a label fires "opened" and "labeled" at the same
+# moment; cancelling one of the two leaves a cancelled run on the commit and the PR reads UNSTABLE.
+# The job takes seconds, so letting both finish is cheaper.
+
+permissions:
+  contents: read
+  # check:branch and check:ownership read the linked issue (open? same label? a "Cross-team:" line?).
+  issues: read
+
+jobs:
+  pull-request:
+    name: pull request follows the template
+    # Not on sync PRs (main -> feature/team-N): their head is main itself, so this job's result is recorded on main's
+    # latest commit, and Railway's "Wait for CI" would skip every deploy while one fails. Their commits were already
+    # reviewed and checked on main; CI still runs on them.
+    if: ${{ github.head_ref != 'main' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      # Full history, so the check can compare the PR's files with its base branch.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+
+      # The script has no dependencies, so there is no install step. It reads the PR from the event
+      # file and gets the branch names through env vars, so a title or body can never run as a command.
+      - name: Check the pull request
+        env:
+          BASE_REF: ${{ github.base_ref }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: node tooling/workflow/check-pr.mjs --event "$GITHUB_EVENT_PATH" --git-base "origin/$BASE_REF" --git-head "$HEAD_SHA"
+
+      # Conventional Commits with an issue reference (pnpm check:commit). Merge commits are exempt.
+      - name: Check the commit messages
+        if: ${{ !cancelled() }}
+        env:
+          BASE_REF: ${{ github.base_ref }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: node tooling/workflow/check-commit.mjs --range "origin/$BASE_REF..$HEAD_SHA" --exclude origin/main
+
+      # The branch-level checks from pnpm preflight. They read the head and base branch names
+      # from GITHUB_HEAD_REF and GITHUB_BASE_REF, and compare the PR's head commit with origin/<base>.
+      - name: Check the branch and its issue
+        if: ${{ !cancelled() }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node tooling/workflow/check-branch.mjs
+
+      - name: Check folder ownership
+        if: ${{ !cancelled() }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: node tooling/workflow/check-ownership.mjs --head "$HEAD_SHA"
+
+      - name: Check committed files and secrets
+        if: ${{ !cancelled() }}
+        env:
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          node tooling/workflow/check-files.mjs --head "$HEAD_SHA"
+          node tooling/workflow/check-files.mjs secrets --head "$HEAD_SHA"
+
+      - name: Check docs links and simulation determinism
+        if: ${{ !cancelled() }}
+        run: |
+          node tooling/workflow/check-docs.mjs
+          node tooling/workflow/check-determinism.mjs
+
+      - name: Report shared contract changes
+        if: ${{ !cancelled() }}
+        env:
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: node tooling/workflow/check-contract.mjs --head "$HEAD_SHA"

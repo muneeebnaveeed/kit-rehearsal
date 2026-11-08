@@ -1,0 +1,79 @@
+{
+  "name": "hackathon-kit",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.28.0",
+  "engines": {
+    "node": ">=22.21.1 <23"
+  },
+  "scripts": {
+    "preinstall": "node tooling/check-node.mjs",
+    "prepare": "node tooling/install-hooks.mjs",
+    "new-game": "node tooling/new-game.mjs",
+    "dev": "pnpm --filter @kit/template dev",
+    "build": "pnpm -r build",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "biome check .",
+    "format": "biome check --write .",
+    "typecheck": "pnpm -r typecheck && tsc -p .railway && tsc -p tooling/workflow && tsc -p tooling/qa && tsc -p course/tooling",
+    "gen:api": "tsx server/core/src/scripts/gen-api-schema.ts",
+    "check:setup": "node tooling/check-setup.mjs",
+    "workflow:classify": "node tooling/workflow/classify.mjs",
+    "check:issue": "node tooling/workflow/check-issue.mjs",
+    "check:pr": "node tooling/workflow/check-pr.mjs",
+    "check:commit": "node tooling/workflow/check-commit.mjs",
+    "labels:sync": "node tooling/workflow/labels-sync.mjs",
+    "labels:prs": "node tooling/workflow/pr-labels.mjs",
+    "check:branch": "node tooling/workflow/check-branch.mjs",
+    "check:ownership": "node tooling/workflow/check-ownership.mjs",
+    "check:files": "node tooling/workflow/check-files.mjs",
+    "check:secrets": "node tooling/workflow/check-files.mjs secrets",
+    "check:docs": "node tooling/workflow/check-docs.mjs",
+    "check:config": "node tooling/workflow/check-config.mjs",
+    "check:determinism": "node tooling/workflow/check-determinism.mjs",
+    "check:contract": "node tooling/workflow/check-contract.mjs",
+    "check:review": "node tooling/workflow/check-review.mjs",
+    "team:set": "node tooling/workflow/team-set.mjs",
+    "issue:start": "node tooling/workflow/issue-start.mjs",
+    "pr:open": "node tooling/workflow/pr-open.mjs",
+    "pr:ci-logs": "node tooling/workflow/ci-logs.ts",
+    "pr:comments": "node tooling/workflow/pr-comments.ts",
+    "pr:rubric": "node tooling/workflow/pr-rubric.ts",
+    "pipeline": "node tooling/workflow/pipeline.ts",
+    "preflight": "node tooling/workflow/preflight.mjs",
+    "preflight:quick": "node tooling/workflow/preflight.mjs --quick",
+    "sync": "node tooling/workflow/sync.mjs",
+    "team:promote": "node tooling/workflow/team-promote.mjs",
+    "branches:sync": "node tooling/workflow/branches-sync.mjs",
+    "env:status": "node tooling/workflow/env-status.mjs",
+    "env:wait": "node tooling/workflow/env-wait.mjs",
+    "qa:bots": "node tooling/qa/bots.mjs",
+    "qa:multi": "node tooling/qa/multi.mjs",
+    "qa:evidence": "node tooling/qa/evidence.mjs",
+    "qa:smoke": "node tooling/qa/smoke.ts",
+    "qa:load": "pnpm dlx @colyseus/loadtest@0.18.4 tooling/qa/load.ts --endpoint ws://localhost:2567 --room sample_room --numClients 50",
+    "test:e2e": "playwright test",
+    "check:instructor": "node tooling/workflow/check-instructor.mjs"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.6.5",
+    "@playwright/test": "^1.65.0",
+    "@types/node": "22.20.5",
+    "colyseus.js": "^0.16.22",
+    "playwright": "^1.65.0",
+    "railway": "3.16.0",
+    "tsx": "4.23.15",
+    "typescript": "5.9.3",
+    "vitest": "5.1.0",
+    "zod": "4.6.7"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ],
+    "ignoredBuiltDependencies": [
+      "msgpackr-extract"
+    ]
+  }
+}

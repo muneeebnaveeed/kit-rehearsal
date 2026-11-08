@@ -1,0 +1,21 @@
+{
+  "name": "@kit/core",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./shared": "./src/shared/index.ts",
+    "./server": "./src/server/index.ts",
+    "./sim": "./src/sim/index.ts",
+    "./testing": "./src/server/testing/counterGame.ts",
+    "./client": "./src/client/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@colyseus/schema": "5.0.45",
+    "@colyseus/sdk": "0.18.9",
+    "zod": "4.6.7"
+  }
+}

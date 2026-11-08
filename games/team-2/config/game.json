@@ -1,0 +1,10 @@
+{
+  "version": "1",
+  "tickRate": 30,
+  "patchRate": 20,
+  "maxPlayers": 8,
+  "reconnectSeconds": 20,
+  "arena": { "width": 800, "height": 600 },
+  "player": { "speed": 220, "radius": 14 },
+  "pickups": { "count": 6, "radius": 8, "points": 1 }
+}

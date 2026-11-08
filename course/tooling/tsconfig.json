@@ -1,0 +1,11 @@
+{
+  // Typechecks the course tooling tests. The .mjs scripts are typed through allowJs inference.
+  "extends": "../../tooling/tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2023"],
+    "types": ["node"],
+    "allowJs": true,
+    "checkJs": false
+  },
+  "include": ["*.ts", "lib/*.ts"]
+}

@@ -1,0 +1,10 @@
+# The instructors review everything under course/, who may use the team-instructor identity, and the code
+# that enforces it (the workflow and the two scripts), so the gate cannot be weakened without them.
+# GitHub only enforces this when the `main` ruleset requires code owner review (.github/rulesets/main.json).
+# Keep the owners in sync with .github/instructors.json (a test checks it).
+/course/                                            @instructor-login
+/.github/instructors.json                           @instructor-login
+/.github/CODEOWNERS                                 @instructor-login
+/.github/workflows/instructor-gate.yml              @instructor-login
+/tooling/workflow/check-instructor.mjs       @instructor-login
+/tooling/workflow/lib/check-instructor.mjs   @instructor-login
