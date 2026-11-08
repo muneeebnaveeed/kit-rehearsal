@@ -47,11 +47,6 @@ const env = str("env") ?? "production";
 if (!["production", "development", "local"].includes(env)) usage(`unknown --env "${env}".`);
 const sha = (str("sha") ?? usage("give the commit with --sha.")).toLowerCase();
 if (!/^[0-9a-f]{7,40}$/.test(sha)) usage(`"${sha}" is not a commit SHA.`);
-const url = (str("url") ?? process.env.KIT_GATEWAY)?.replace(/\/+$/, "");
-if (!url) {
-  console.error("error: no gateway address. Pass --url, or set KIT_GATEWAY.");
-  process.exit(EXIT.environment);
-}
 const seconds = (name: string, fallback: number) => {
   const v = str(name);
   if (v === null) return fallback * 1000;
@@ -101,6 +96,13 @@ if (since && !/^0+$/.test(since)) {
   }
 }
 output("deployed=true");
+
+// Only now: a push that deploys nothing passes without a gateway to ask.
+const url = (str("url") ?? process.env.KIT_GATEWAY)?.replace(/\/+$/, "");
+if (!url) {
+  console.error("error: no gateway address. Pass --url, or set KIT_GATEWAY.");
+  process.exit(EXIT.environment);
+}
 
 const log = (line: string) => {
   if (!flags.json) console.error(line);

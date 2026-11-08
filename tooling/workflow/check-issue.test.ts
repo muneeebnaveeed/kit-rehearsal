@@ -27,7 +27,7 @@ const valid = {
 
 const check = (over: Record<string, unknown>) =>
   checkIssue({
-    title: "[team-2] Add login",
+    title: "Add login",
     body: valid.feature,
     labels: ["team-2"],
     config,
@@ -44,7 +44,7 @@ describe("every issue template", () => {
   });
 
   it.each(Object.keys(templates))("%s is rejected while unfilled", (type) => {
-    const r = checkIssue({ title: "[team-2] x", body: template(type), type, config, templates });
+    const r = checkIssue({ title: "x", body: template(type), type, config, templates });
     expect(r.ok).toBe(false);
   });
 });
@@ -58,14 +58,19 @@ describe("checkIssue", () => {
     expect(check({ body: valid.bug, labels: ["team-2"] })).toMatchObject({ ok: true, type: "bug" });
   });
 
-  it("rejects a title without a [label] prefix", () => {
-    const r = check({ title: "Add login" });
-    expect(r.problems.map((p: { rule: string }) => p.rule)).toContain("title");
+  it("rejects a title with a [label] prefix", () => {
+    const r = check({ title: "[team-2] Add login" });
+    expect(r.problems).toEqual([
+      { rule: "title", message: 'Drop "[team-2]" from the title: the team label already names the team.' },
+    ]);
   });
 
-  it("rejects a title whose prefix is not a team label", () => {
-    const r = check({ title: "[frontend] Add login" });
-    expect(r.problems[0]?.message).toContain("not a team label");
+  it("rejects any leading prefix, not only a team label", () => {
+    expect(check({ title: "[frontend] Add login" }).problems[0]?.message).toContain('Drop "[frontend]"');
+  });
+
+  it("rejects an empty title", () => {
+    expect(check({ title: "  " }).problems).toContainEqual({ rule: "title", message: "The title is empty." });
   });
 
   it("needs exactly one team label", () => {
@@ -73,9 +78,8 @@ describe("checkIssue", () => {
     expect(check({ labels: ["team-1", "team-2"] }).ok).toBe(false);
   });
 
-  it("rejects a title that disagrees with the label", () => {
-    const r = check({ labels: ["team-1"] });
-    expect(r.problems[0]?.message).toContain("team label is team-1");
+  it("accepts any single team label, since the title no longer names one", () => {
+    expect(check({ labels: ["team-1"] }).ok).toBe(true);
   });
 
   it("reports a missing section", () => {

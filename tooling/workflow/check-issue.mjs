@@ -1,7 +1,7 @@
-// `pnpm check:issue`: checks that an issue follows its template (title prefix, one team label,
+// `pnpm check:issue`: checks that an issue follows its template (no title prefix, one team label,
 // every heading present and filled, a "Done when" checklist).
 //
-//   pnpm check:issue --file body.md --title "[platform] Add X" [--labels platform] [--type feature]
+//   pnpm check:issue --file body.md --title "Add X" [--labels platform] [--type feature]
 //   pnpm check:issue --number 41            reads the issue with the GitHub CLI
 //   pnpm check:issue ... --json             machine-readable output
 //

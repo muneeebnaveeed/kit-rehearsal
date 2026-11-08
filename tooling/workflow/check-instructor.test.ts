@@ -23,8 +23,7 @@ const pr = (over: Record<string, unknown> = {}) => ({
   instructors,
   ...over,
 });
-const issue = (over: Record<string, unknown> = {}) =>
-  pr({ kind: "issue", title: "[team-2] Add login", ...over });
+const issue = (over: Record<string, unknown> = {}) => pr({ kind: "issue", title: "Add login", ...over });
 
 describe("instructorClaims", () => {
   it("is empty for an ordinary item", () => {
@@ -145,12 +144,12 @@ describe("itemFromEvent", () => {
   });
 
   it("reads an issues event", () => {
-    const e = { issue: { user: { login: "b" }, labels: [], title: "[team-1] t", body: "x" } };
+    const e = { issue: { user: { login: "b" }, labels: [], title: "t", body: "x" } };
     expect(itemFromEvent(e)).toEqual({
       kind: "issue",
       author: "b",
       labels: [],
-      title: "[team-1] t",
+      title: "t",
       body: "x",
     });
   });

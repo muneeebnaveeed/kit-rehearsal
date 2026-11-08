@@ -67,6 +67,6 @@ Do it for every game, and for the gateway.
 ## What we do not use
 
 - **Deploying team branches.** `feature/team-N` and every other team branch are never deployed to Railway, and there is no environment for them. A team sees its work running only after it reaches `main` (production); before that, it runs locally.
-- **A GitHub Environment or Railway tokens in GitHub secrets.** They would only matter if a GitHub Actions workflow deployed, and none does: Railway deploys from the branches, and the hourly pipeline only opens PRs (its `PIPELINE_TOKEN` is a GitHub token, not a Railway one). Do not add either; if a workflow ever applies the config, use a Railway *project* token (scoped to production) and store it in GitHub's secret store.
+- **A GitHub Environment or Railway tokens in GitHub secrets.** They would only matter if a GitHub Actions workflow deployed, and none does: Railway deploys from the branches, and the hourly pipeline only opens PRs (its `PIPELINE_APP_KEY` is a GitHub App key, not a Railway token). Do not add either; if a workflow ever applies the config, use a Railway *project* token (scoped to production) and store it in GitHub's secret store.
 - **`railway.json` or `railway.toml`.** Railway deprecated them and stops reading them on 2026-12-01. The config is `.railway/railway.ts`.
 - **Per-team Railway projects, a development or staging environment, and promoting between Railway environments.** The repository has one project and one environment.

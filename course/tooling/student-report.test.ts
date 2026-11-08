@@ -32,7 +32,7 @@ const pr = (over: Record<string, unknown> = {}) => ({
 });
 const issue = (over: Record<string, unknown> = {}) => ({
   number: 12,
-  title: "[team-2] Add login",
+  title: "Add login",
   author: "alice",
   assignees: [],
   labels: ["team-2", "enhancement"],
@@ -97,10 +97,14 @@ describe("collectStats", () => {
     expect(of(list, "bob").merges).toBe(1);
   });
 
-  it("flags issues without a team label or a matching title", () => {
+  it("flags issues without a team label or with a title prefix", () => {
     const s = of(
       stats({
-        issues: [issue(), issue({ number: 13, title: "Add login" }), issue({ number: 14, labels: ["bug"] })],
+        issues: [
+          issue(),
+          issue({ number: 13, title: "[team-2] Add login" }),
+          issue({ number: 14, labels: ["bug"] }),
+        ],
       }),
       "alice",
     );

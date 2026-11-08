@@ -9,13 +9,13 @@ export interface Step {
 const issueBody = (goal: string, why: string, what: string, done: string) =>
   `## Goal\n\n${goal}\n\n## Why now\n\n${why}\n\n## What changes\n\n${what}\n\n## Done when\n\n- [ ] ${done}\n`;
 
-/** The standing issue each automatic PR refers to with Refs #N, and the label it carries. */
+/** The standing issue each automatic PR refers to with Refs #N, and the label it carries (always platform). */
 export function trackingIssue(step: Step): { title: string; label: string; body: string } {
   const branch = `feature/${step.team}`;
   if (step.kind === "sync") {
     // branches:sync only accepts a platform issue: a sync merges every owner's files.
     return {
-      title: `[platform] Syncs from main into ${branch}`,
+      title: `Syncs from main into ${branch}`,
       label: "platform",
       body: issueBody(
         `${branch} gets main's platform fixes, hooks and other teams' work as soon as they land.`,
@@ -26,8 +26,9 @@ export function trackingIssue(step: Step): { title: string; label: string; body:
     };
   }
   return {
-    title: `[${step.team}] Promotions from ${branch}`,
-    label: step.team,
+    title: `Promotions from ${branch} into main`,
+    // Like a sync, a promotion merges every owner's files, so it is platform work.
+    label: "platform",
     body: issueBody(
       `${step.team}'s finished work reaches production every hour.`,
       `Every promotion PR must refer to an issue.`,
