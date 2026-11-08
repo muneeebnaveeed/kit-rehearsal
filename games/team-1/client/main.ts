@@ -103,7 +103,7 @@ async function joinByCode(raw: string): Promise<Room<SampleState>> {
 
 function showLobby(health: BuildInfo, error?: string): void {
   app.innerHTML = `
-    <h1>template</h1>
+    <h1>team-1</h1>
     <div>env ${health.env} · ${health.sha.slice(0, 7)}</div>
     <p><button id="create">Create room</button></p>
     <p><input id="code" maxlength="4" placeholder="CODE" size="6" /> <button id="join">Join by code</button></p>
