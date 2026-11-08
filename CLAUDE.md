@@ -53,7 +53,7 @@ Every PR is merged with a **merge commit**, never squashed or rebased. Each cont
 
 Platform work (`server/`, CI, Railway) and instructor work (`course/`, workflow files) don't belong to a game team, so their branches (`platform/<issue>-…`, `team-instructor/<issue>-…`) open pull requests straight into `main`.
 
-Branch protection isn't set up yet, so these rules are followed by convention. Follow them as if they were enforced. It must be on before the first deploy (see [Deploying to Railway](#deploying-to-railway)).
+The rulesets in `.github/rulesets/` enforce these rules on GitHub: `main` and every `feature/team-N` only change through a reviewed PR with green checks, and nobody can bypass that.
 
 ## Deploying to Railway
 
@@ -173,7 +173,7 @@ Issues, pull requests and commits follow templates. **A script chooses the type,
 
 **Before opening a PR, run `pnpm preflight`; it must pass.** It runs lint, typecheck, tests and the build, then checks the branch (name, base, linked issue), folder ownership, commit messages, committed files, secrets, docs links, game config and simulation determinism, and says how to fix each failure. Agents run `pnpm preflight:quick` (lint, typecheck, ownership) after every change. CI runs the same checks on every PR. Files owned by another team are only allowed when the issue explains why on a line of its own: `Cross-team: <why>`.
 
-The "PR rubric" workflow (`pnpm pr:rubric`) comments a score on every PR: tests changed with the code, concrete *How to test* steps, screenshots of client changes (an image, or `None, <reason>`), a short *Summary* without code names, under 400 changed lines, and a *Root cause* on bug fixes. It is advice, not a gate: it never fails and is not a required check. Sync and promotion PRs are skipped.
+The "PR rubric" workflow (`pnpm pr:rubric`) comments a score on every PR: tests changed with the code, concrete *How to test* steps, screenshots of client changes (an image, or `None, <reason>`), a short *Summary* without code names, under 1000 changed lines of code (tests and docs not counted), and a *Root cause* on bug fixes. It is advice, not a gate: it never fails and is not a required check. Sync and promotion PRs are skipped.
 
 ## Labels
 

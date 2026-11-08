@@ -86,7 +86,7 @@ Why these rules exist:
 | `pnpm pr:open` | Run `pnpm preflight`, then open the PR for the current work branch into your team's branch |
 | `pnpm pr:ci-logs` | Download the logs of the checks failing on your PR and print the failing steps (see "Workflow commands" below) |
 | `pnpm pr:comments` | Collect a PR's open review threads, reviews and discussion in one report |
-| `pnpm pr:rubric --number <n>` | Score a PR on tests, How to test, screenshots, Summary, size (under 400 changed lines) and Root cause, with a tip for each miss (`--json`, `--comment`). Advice, not a gate: the "PR rubric" workflow posts it as one comment on every PR |
+| `pnpm pr:rubric --number <n>` | Score a PR on tests, How to test, screenshots, Summary, size (under 1000 changed lines of code; tests and docs excluded) and Root cause, with a tip for each miss (`--json`, `--comment`). Advice, not a gate: the "PR rubric" workflow posts it as one comment on every PR |
 | `pnpm issues:close-shipped --number <n>` | Closes the issues a merged promotion shipped: the `Closes #N` of every work PR whose merge commit it carries, each with a comment naming the promotion (`--dry-run`, `--json`). The "Close shipped issues" workflow runs it when a promotion merges, because GitHub only acts on `Closes #N` in PRs into `main` |
 | `pnpm check:review` | Check a PR has an approving review from someone other than its author |
 | `pnpm sync` | Merge your branch's base into it and report conflicts (see "Branch and environment commands" below) |
