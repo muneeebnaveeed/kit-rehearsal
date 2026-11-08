@@ -1,5 +1,5 @@
 // `node course/tooling/issue-report.mjs`: lists, per team, which issues break the naming and labelling
-// rules (exactly one team label, and a title that starts with the same `[<team-label>]`), and why. Reads
+// rules (exactly one team label, and no `[team-2]` prefix in the title), and why. Reads
 // the issues from GitHub with the GitHub CLI, then runs the rules in lib/issue-report.mjs, which reuse
 // `pnpm check:issue`.
 //
@@ -13,8 +13,8 @@
 //   node course/tooling/issue-report.mjs --fix                  dry run: shows how each failing issue would be fixed
 //   node course/tooling/issue-report.mjs --fix --apply          fixes the issues on GitHub and comments what is left
 //
-// --fix adds a missing team label when the title prefix names the team, and fixes a missing or malformed
-// prefix when the label names it (see lib/issue-fix.mjs). The rest goes into one comment per issue.
+// --fix removes a title prefix, and adds the team it names as the label when the issue has none
+// (see lib/issue-fix.mjs). The rest goes into one comment per issue.
 //
 // Exit codes: 0 done, 1 some fixes failed, 2 usage error, 3 environment problem (gh missing or not
 // logged in).

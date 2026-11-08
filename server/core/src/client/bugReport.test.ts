@@ -93,7 +93,7 @@ describe("buildIssueUrl", () => {
     expect(url.origin + url.pathname).toBe("https://github.com/OWNER/REPO/issues/new");
     expect(url.searchParams.get("template")).toBe("bug.md");
     expect(url.searchParams.get("labels")).toBe("bug,team-2");
-    expect(url.searchParams.get("title")).toBe("[team-2] Player stuck");
+    expect(url.searchParams.get("title")).toBe("Player stuck");
     const body = url.searchParams.get("body") ?? "";
     expect(body).toContain("## Goal");
     expect(body).toContain("## Done when");

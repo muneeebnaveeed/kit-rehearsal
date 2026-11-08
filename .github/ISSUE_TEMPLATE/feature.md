@@ -1,11 +1,10 @@
 ---
 name: Feature
 about: New behaviour or capability
-title: "[team-label] "
 ---
 
 <!--
-Title: [<team-label>] Short imperative summary, e.g. "[team-2] Add login page".
+Title: Short imperative summary, e.g. "Add login page". No "[team-2]" prefix: the label names the team.
 Add exactly one team label (team-1..4, platform or team-instructor).
 Fill in every section. Don't delete or rename the headings; the checks and the evaluation read them.
 -->

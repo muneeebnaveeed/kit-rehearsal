@@ -30,7 +30,7 @@ describe("slugify", () => {
 describe("planIssueStart", () => {
   const issue = {
     number: 14,
-    title: "[team-2] Add login page",
+    title: "Add login page",
     state: "OPEN",
     labels: ["team-2", "enhancement"],
     assignees: [],
@@ -59,7 +59,7 @@ describe("planIssueStart", () => {
   it("starts platform and instructor work from main", () => {
     const r = plan({
       team: "platform",
-      issue: { ...issue, labels: ["platform"], title: "[platform] Add CI" },
+      issue: { ...issue, labels: ["platform"], title: "Add CI" },
     });
     expect(r).toMatchObject({ ok: true, branch: "platform/14-add-ci", base: "main" });
   });

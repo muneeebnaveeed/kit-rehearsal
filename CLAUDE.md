@@ -18,7 +18,7 @@ These rules apply to every agent (and every human) working in this repository. T
 
 Work inside your own team's folder. Changes to another team's folder or to the shared folders need an issue that says why, on a line of its own (`Cross-team: <why>`), and a review from someone on the owning team.
 
-**`team-instructor` is reserved for the instructors.** Only the GitHub accounts in [`.github/instructors.json`](.github/instructors.json) may use it: the label, a title that starts with `[team-instructor]` or is written `type(team-instructor): ...`, and `team-instructor` under *Team* in a PR. Everybody else, AI agents included, uses their own team label. To change files under `course/` from another team, use your team's label (or `platform`) and add a line `Cross-team: <why>` to the issue. The account is what is checked, not who typed: an instructor's AI-assisted work is fine.
+**`team-instructor` is reserved for the instructors.** Only the GitHub accounts in [`.github/instructors.json`](.github/instructors.json) may use it: the label, a PR title written `type(team-instructor): ...`, and `team-instructor` under *Team* in a PR. Everybody else, AI agents included, uses their own team label. To change files under `course/` from another team, use your team's label (or `platform`) and add a line `Cross-team: <why>` to the issue. The account is what is checked, not who typed: an instructor's AI-assisted work is fine.
 
 - The `instructor gate` check runs on every pull request (it blocks the merge once the rulesets require it) and comments on issues. `pnpm check:instructor --kind pr|issue --number <n>` runs it by hand.
 - `pnpm workflow:classify` refuses the `team-instructor` label to any other account. Agents never work around it (for example with `--actor`): they stop and ask which label to use.
@@ -74,7 +74,7 @@ There is one environment, `production`, and it deploys `main`: everything merged
    Railway services use Wait for CI (`checkSuites` in `.railway/railway.ts`), so a commit with a red check is never deployed.
 3. **Check after every deploy.** The `production check` workflow runs on every push to `main` that changed something a service deploys: it waits until production runs the commit and opens every game through the gateway (`pnpm qa:smoke`), then publishes a GitHub release with the merged PR's notes. A red run means production is not healthy: roll back (rule 9).
 4. **Infrastructure is code.** Services, domains, variables and replicas are defined in `.railway/railway.ts` and changed through a reviewed PR that includes the `railway config plan` output. Don't use `railway.json` or `railway.toml`: Railway deprecated them and stops reading them on 2026-12-01. Anything missing from the file is deleted on apply, so every new service must be added there. A team's game is added to the `GAMES` list, which also adds it to the gateway.
-5. **Secrets stay out of the repository.** Keys, tokens and passwords live in Railway variables (sealed, for secrets). No workflow deploys, so GitHub Actions keeps one secret only: `PIPELINE_TOKEN`, which lets the hourly pipeline open PRs that start CI. Never commit them, paste them into an issue, PR or chat, or print them in logs. Only `.env.example` (names, no values) is committed.
+5. **Secrets stay out of the repository.** Keys, tokens and passwords live in Railway variables (sealed, for secrets). No workflow deploys, so GitHub Actions keeps one secret only: `PIPELINE_APP_KEY`, the private key of the GitHub App the hourly pipeline opens PRs as, so they start CI. Never commit them, paste them into an issue, PR or chat, or print them in logs. Only `.env.example` (names, no values) is committed.
 6. **Local is not production.** A laptop never uses production's variables or data. `APP_ENV` says where the code runs (`local` or `development` on a laptop, `production` on Railway, where debug commands are off), and `/health` returns it together with the deployed SHA. The one exception: the platform team can turn the debug tools on for one hosted game (`debug: true` in `GAMES`, which sets `DEBUG_TOOLS=on`) for the event's testing. `APP_ENV` stays `production`, `/health` reports `debug: true`, and it must be off again for judging and demos, because debug commands change game state. A team asks for it in a `platform` issue.
 7. **Every service has a `/health` endpoint.** It is Railway's health check. A deploy that is not healthy is not fixed by restarting it by hand: investigate, or roll back. Keep the endpoint fast and free of dependencies.
 8. **Keep it small.** One replica per service. No new service, database or paid add-on without an issue that says why and who pays for it.
@@ -118,7 +118,7 @@ Every change goes through the same path: **issue → branch → commits → pull
 
 - Open an issue before writing any code. No issue, no branch, no PR.
 - The issue must carry exactly one team label: `team-1`, `team-2`, `team-3`, `team-4`, `platform` or `team-instructor`. The label says which team owns the work.
-- The title starts with the team name: `[team-2] Add login page`.
+- The title is a short summary with no team prefix, `Add login page`, not `[team-2] Add login page`: the label already names the team.
 - Describe what is changing and why, and what "done" looks like.
 
 ### 2. Branch
@@ -142,7 +142,7 @@ Every change goes through the same path: **issue → branch → commits → pull
 - One pull request per issue.
 - Fill in every field of the [pull request template](.github/pull_request_template.md) (`**Label**: value`). Don't delete or rename the labels. The *Summary* (and a bug's *Root cause*) says why, in 2 or 3 sentences, never what changed: the diff shows that.
 - The PR must carry the same team label as its issue.
-- The title follows [Conventional Commits](https://www.conventionalcommits.org/), like a commit subject, with the team label as the scope: `feat(team-2): add login page`. The type matches the PR template (`feat` for a feature, `fix` for a bug, `docs`, `refactor`, or `chore`/`ci`/`build`/`test`/`perf` for a chore; `chore` for promotion and sync PRs). Issue titles keep the `[team-2] Add login page` form.
+- The title follows [Conventional Commits](https://www.conventionalcommits.org/), like a commit subject, with the team label as the scope: `feat(team-2): add login page`. The type matches the PR template (`feat` for a feature, `fix` for a bug, `docs`, `refactor`, or `chore`/`ci`/`build`/`test`/`perf` for a chore; `chore` for promotion and sync PRs). Issue titles have no team in them (`Add login page`).
 - The description links the issue with a closing keyword (`Closes #14`) and summarizes what changed and how it was tested.
 - Set the base branch as described in [Branches](#branches): `feature/team-N` for a work branch, `main` for a feature branch (and for platform and instructor work), `feature/team-N` for a sync from `main`.
 - Keep the PR focused. Unrelated changes go in their own issue and PR.
