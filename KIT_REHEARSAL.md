@@ -1,25 +1,25 @@
 # Rehearsal
 
-A dry run of the whole flow in a throwaway repository, before the real one exists. It proves what the tests can't: that the bot's token can open PRs that start CI, that auto-merge waits for an approval, that Railway deploys a merge and the production check sees it, and that GitHub keeps `feature/team-N` after a promotion merges. Plan one afternoon. Do it each time the kit changes in the pipeline, the rulesets or Railway.
+A dry run of the whole flow in a throwaway repository, before the real one exists. It proves what the tests can't: that the pipeline app's PRs start CI, that auto-merge waits for an approval, that Railway deploys a merge and the production check sees it, and that GitHub keeps `feature/team-N` after a promotion merges. Plan one afternoon. Do it each time the kit changes in the pipeline, the rulesets or Railway.
 
-You need two GitHub accounts besides the bot: one that opens a work PR and one that approves it. A personal account plus a second one works.
+You need two GitHub accounts: one that opens a work PR and one that approves it. The pipeline app opens the automatic PRs, so either account can approve those.
 
 ## 1. Repository
 
-- [ ] Create a private repository from the template, e.g. `OWNER/kit-rehearsal`, and follow [KIT_SETUP.md](KIT_SETUP.md) sections 2 to 7 against it, with these shortcuts:
-  - Labels, rulesets, the bot, `PIPELINE_TOKEN` and the `KIT_GATEWAY` variable: as written. These are what is being rehearsed.
-  - People: just the two accounts and the bot.
+- [ ] Create a repository from the template, e.g. `OWNER/kit-rehearsal`: private on a paid plan, public otherwise (rulesets and auto-merge need one or the other), and follow [KIT_SETUP.md](KIT_SETUP.md) sections 2 to 7 against it, with these shortcuts:
+  - Labels, rulesets, the pipeline app and the `KIT_GATEWAY` variable: as written. These are what is being rehearsed. Install the app you already have on the rehearsal repository as well.
+  - People: just the two accounts.
   - Railway: a separate project (`railwayProject` in `kit.json`), so the rehearsal never touches the real one. The template game and one team stub are enough in `GAMES`.
 
 ## 2. One work PR, one promotion
 
 - [ ] As the first account: `pnpm issue:start` for team-1, a one-line visible change in `games/team-1`, `pnpm pr:open`. The checks run, the labeller sets `waiting-on.review`, and the rubric comment appears.
 - [ ] As the second account: approve and merge it into `feature/team-1`. `feature/team-1` still exists afterwards.
-- [ ] Run the Hourly pipeline by hand (Actions, Run workflow). The run summary says it opened the promotion for team-1 and skipped the others. The PR is by the bot, has auto-merge on and is waiting for a review.
+- [ ] Run the Hourly pipeline by hand (Actions, Run workflow). The run summary says it opened the promotion for team-1 and skipped the others. The PR is by the app (`<name>[bot]`), has auto-merge on and is waiting for a review.
 - [ ] As the second account: tick the remaining checklist items and approve. GitHub merges once CI is green, with a merge commit.
 - [ ] Check after the merge:
   - `feature/team-1` still exists. If GitHub deleted it, the feature ruleset is missing or "delete branch on merge" won over it: fix that before the event.
-  - Railway deployed `main`, or holds the deploy for approval because the bot isn't a project member (KIT_SETUP.md, section 6).
+  - Railway deployed `main`, or holds the deploy for approval because the app isn't a project member (KIT_SETUP.md, section 6). Note which, and fix section 6 if it is wrong.
   - The Production check run on the merge commit is green and a GitHub release exists.
   - `pnpm env:status` shows production on the merge commit.
 
@@ -35,4 +35,4 @@ You need two GitHub accounts besides the bot: one that opens a work PR and one t
 
 ## 4. Clean up
 
-- [ ] Set `PIPELINE` to `off`, delete the bot's token, the Railway project and the repository.
+- [ ] Set `PIPELINE` to `off`, remove the repository from the app's installation, delete the Railway project and the repository.
