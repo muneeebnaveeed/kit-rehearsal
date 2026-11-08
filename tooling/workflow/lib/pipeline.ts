@@ -7,7 +7,7 @@ export interface Step {
 }
 
 const issueBody = (goal: string, why: string, what: string, done: string) =>
-  `## Goal\n\n${goal}\n\n## Why now\n\n${why}\n\n## What changes\n\n${what}\n\n## Done when\n\n- [ ] ${done}\n`;
+  `**Goal**: ${goal}\n**Why now**: ${why}\n**What changes**: ${what}\n**Done when**:\n- [ ] ${done}\n`;
 
 /** The standing issue each automatic PR refers to with Refs #N, and the label it carries (always platform). */
 export function trackingIssue(step: Step): { title: string; label: string; body: string } {

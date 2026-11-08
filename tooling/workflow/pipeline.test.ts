@@ -32,6 +32,16 @@ describe("trackingIssue", () => {
       [],
     );
   });
+
+  it.each(["promote", "sync"] as const)("writes %s's issue as chore fields, one per line", (kind) => {
+    const { title, label, body } = trackingIssue({ kind, team: "team-1" });
+    expect(body).not.toMatch(/^##\s/m);
+    expect(body).not.toMatch(/\n\s*\n/);
+    expect(checkIssue({ title, body, labels: [label], config, templates })).toMatchObject({
+      ok: true,
+      type: "chore",
+    });
+  });
 });
 
 describe("outcome", () => {

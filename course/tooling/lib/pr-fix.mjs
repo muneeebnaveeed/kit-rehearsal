@@ -211,17 +211,20 @@ function fixClosedBody({ original, sections, team, number, fromMain, fixed }) {
   const prepend = [];
   if (number !== null && !hasLink) {
     if (linked) body = replaceSection(body, "Linked issue", `${keyword} #${number}`);
-    else prepend.push(`${renderField("Linked issue", `${keyword} #${number}`)}\n`);
+    else prepend.push(renderField("Linked issue", `${keyword} #${number}`));
     fixed.push(`linked the issue with \`${keyword} #${number}\``);
   }
   if (team && teamText !== team) {
     if (teamSection) body = replaceSection(body, "Team", team);
     else if (linked) body = insertAfterSection(body, "Linked issue", renderField("Team", team));
-    else prepend.push(`${renderField("Team", team)}\n`);
+    else prepend.push(renderField("Team", team));
     fixed.push(`set the Team field to \`${team}\``);
   }
-  return prepend.length ? `${prepend.join("\n")}\n${body}` : body;
+  return prepend.length ? `${prepend.join("\n")}${gapBefore(body)}${body}` : body;
 }
+
+// No blank line between two fields; a "## " heading or plain text keeps one.
+const gapBefore = (next) => (/^\*\*(.+?)\*\*:/.test(next) ? "\n" : "\n\n");
 
 /** Where the section of `heading` starts and ends (exclusive) in a raw body's lines, or null. */
 function sectionSpan(lines, heading) {
@@ -243,7 +246,8 @@ function insertAfterSection(body, heading, block) {
   if (!span) return body;
   const before = lines.slice(0, span.end).join("\n").trimEnd();
   const after = lines.slice(span.end).join("\n");
-  return `${before}\n\n${block}\n\n${after}`;
+  const lead = START.exec(lines[span.at])?.[2] ? "\n" : "\n\n";
+  return `${before}${lead}${block}${gapBefore(after)}${after}`;
 }
 
 /** Replaces the section of `heading` in a raw body with a field holding `content`. */
@@ -252,7 +256,7 @@ function replaceSection(body, heading, content) {
   const span = sectionSpan(lines, heading);
   if (!span) return body;
   const after = lines.slice(span.end).join("\n");
-  return [...lines.slice(0, span.at), renderField(heading, content), "", after].join("\n");
+  return `${[...lines.slice(0, span.at), renderField(heading, content)].join("\n")}${gapBefore(after)}${after}`;
 }
 
 function fixBody({ pr, before, team, number, fromMain, templates, fixed }) {
@@ -324,7 +328,7 @@ function fixBody({ pr, before, team, number, fromMain, templates, fixed }) {
     if (s.text.trim() === "") s.text = PLACEHOLDER;
   }
 
-  const out = `${list.map((s) => renderField(s.heading, s.text)).join("\n\n")}\n`;
+  const out = `${list.map((s) => renderField(s.heading, s.text)).join("\n")}\n`;
   const lead = [...rules].some((r) => STRUCTURE_RULES.has(r)) || !preamble ? "" : `${preamble}\n\n`;
   return `${lead}${out}${footer ? `\n${footer}\n` : ""}`;
 }

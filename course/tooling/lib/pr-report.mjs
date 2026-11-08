@@ -131,7 +131,7 @@ export function auditPr({
         );
       continue;
     }
-    add(p.rule, p.message);
+    add(p.rule, "fix" in p && p.fix ? `${p.message} ${p.fix}` : p.message);
   }
   if (excepted.length > 0)
     warnings.push(

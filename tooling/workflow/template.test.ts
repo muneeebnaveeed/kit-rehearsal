@@ -1,4 +1,4 @@
-// Tests for the PR field parser (lib/template.mjs): PR templates and bodies are "**Label**: value" fields.
+// Tests for the field parser (lib/template.mjs): issue and PR templates and bodies are "**Label**: value" fields.
 import { describe, expect, it } from "vitest";
 import { renderField } from "./lib/pr-body.mjs";
 import { fieldLabelsOf, fieldsOf } from "./lib/template.mjs";
@@ -33,10 +33,36 @@ describe("fieldsOf", () => {
   });
 
   it("reads back what renderField writes", () => {
-    const md = [renderField("Summary", "why"), renderField("How to test", "1. a\n2. b")].join("\n\n");
+    const md = [renderField("Summary", "why"), renderField("How to test", "1. a\n2. b")].join("\n");
     expect(fieldsOf(md)).toEqual([
       { heading: "Summary", body: "why" },
       { heading: "How to test", body: "1. a\n2. b" },
+    ]);
+  });
+
+  it("reads fields with no blank line between them, and a multi-paragraph value as one field", () => {
+    const md = [
+      renderField("Summary", "First paragraph.\n\nSecond paragraph.\n\nIncluded pull requests:\n\n- #1 a"),
+      renderField("Screenshots", "None, nothing visible"),
+      renderField("Checklist", "- [x] one"),
+    ].join("\n");
+    expect(md).not.toMatch(/\n\n\*\*/);
+    expect(fieldsOf(md)).toEqual([
+      {
+        heading: "Summary",
+        body: "First paragraph.\n\nSecond paragraph.\n\nIncluded pull requests:\n\n- #1 a",
+      },
+      { heading: "Screenshots", body: "None, nothing visible" },
+      { heading: "Checklist", body: "- [x] one" },
+    ]);
+  });
+
+  it("reads an issue template's fields after its front matter", () => {
+    const md =
+      "---\nname: Bug\n---\n\n<!--\nTitle: x\n-->\n**Goal**: <!-- hint -->\n**Done when**: <!-- hint -->\n- [ ]\n";
+    expect(fieldsOf(md)).toEqual([
+      { heading: "Goal", body: "" },
+      { heading: "Done when", body: "- [ ]" },
     ]);
   });
 });

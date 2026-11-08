@@ -26,13 +26,13 @@ pnpm workflow:classify --kind issue --json
 
 ## 2. Fill the template
 
-Read the file named in `template`. Write the issue body to a scratch file (not into the repo) that keeps **every `##` heading, in order, with the exact same text**. Remove the HTML comments.
+Read the file named in `template`. Write the issue body to a scratch file (not into the repo) that keeps **every `**Label**:` field, in order, with the exact same label**, one field per line with no blank line between fields. A value can run over several lines (a list, the "Done when" checklist); put it on the lines after `**Label**:`. Remove the HTML comments. Don't add `##` headings.
 
 - **Title:** a short imperative summary, for example `Add the CI workflow`. No `[platform]` prefix: the label names the team.
 - **Goal:** what should be true afterwards and why. **What changes:** a short list of concrete changes.
 - **Done when:** checkboxes someone else can verify (`- [ ] ...`), at least one.
-- Type-specific sections (steps to reproduce, pages affected, why now, behaviour that must not change) are required too.
-- Use only facts from the user, the code or the diff. If a section does not apply, write `None`. Never invent steps, versions or results.
+- Type-specific fields (steps to reproduce, pages affected, why now, behaviour that must not change) are required too.
+- Use only facts from the user, the code or the diff. If a field does not apply, write `None`. Never invent steps, versions or results.
 - Write in English.
 
 ## 3. Check
