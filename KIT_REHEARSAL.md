@@ -9,7 +9,7 @@ You need two GitHub accounts: one that opens a work PR and one that approves it.
 - [ ] Create a repository from the template, e.g. `OWNER/kit-rehearsal`: private on a paid plan, public otherwise (rulesets and auto-merge need one or the other), and follow [KIT_SETUP.md](KIT_SETUP.md) sections 2 to 7 against it, with these shortcuts:
   - Labels, rulesets, the pipeline app and the `KIT_GATEWAY` variable: as written. These are what is being rehearsed. Install the app you already have on the rehearsal repository as well.
   - People: just the two accounts.
-  - Railway: a separate project (`railwayProject` in `kit.json`), so the rehearsal never touches the real one. The template game and one team stub are enough in `GAMES`.
+  - Railway: a separate project (`railwayProject` in `kit.json`), so the rehearsal never touches the real one, on a paid plan (the free plan refuses six services). The template game and one team stub are enough in `GAMES`.
 
 ## 2. One work PR, one promotion
 

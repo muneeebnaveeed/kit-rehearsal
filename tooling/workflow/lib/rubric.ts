@@ -6,7 +6,7 @@ import { CLIENT_FILE } from "./pr-open.mjs";
 import { fieldsOf, stripComments } from "./template.mjs";
 
 export const MARKER = "<!-- kit:pr-rubric -->";
-export const MAX_CHANGED_LINES = 400;
+export const MAX_CHANGED_LINES = 1000;
 // Lockfiles and generated output say nothing about how big the change is to review.
 export const UNCOUNTED_PATHS = [
   "**/pnpm-lock.yaml",
@@ -33,7 +33,7 @@ export interface RubricInput {
   base: string;
   files: PrFile[];
   commits?: number;
-  config: { testPaths: string[]; codePaths: string[] };
+  config: { testPaths: string[]; codePaths: string[]; docsPaths: string[] };
 }
 
 export interface Criterion {
@@ -105,7 +105,13 @@ export function skipReason(head: string, base: string): string | null {
 export function scoreRubric(input: RubricInput): RubricResult {
   const { title, head, base, files, config } = input;
   const body = input.body ?? "";
-  const counted = files.filter((f) => !matchesAny(f.path, UNCOUNTED_PATHS));
+  // Tests and docs are what the rubric asks for, so they never count against the size.
+  const counted = files.filter(
+    (f) =>
+      !matchesAny(f.path, UNCOUNTED_PATHS) &&
+      !matchesAny(f.path, config.testPaths) &&
+      !matchesAny(f.path, config.docsPaths),
+  );
   const changedLines = counted.reduce((n, f) => n + f.additions + f.deletions, 0);
   const commits = input.commits ?? null;
   const skipped = skipReason(head, base);
@@ -193,10 +199,10 @@ export function scoreRubric(input: RubricInput): RubricResult {
 
   criteria.push({
     id: "size",
-    label: `Under ${MAX_CHANGED_LINES} changed lines`,
+    label: `Under ${MAX_CHANGED_LINES} changed lines of code`,
     applies: true,
     pass: changedLines < MAX_CHANGED_LINES,
-    detail: `${changedLines} changed line(s), lockfiles and generated files excluded.`,
+    detail: `${changedLines} changed line(s), tests, docs, lockfiles and generated files excluded.`,
     tip: "Consider splitting it into smaller PRs, each with its own issue.",
   });
 

@@ -15,7 +15,7 @@ Commands use `OWNER/REPO` for the new repository. Run them from a clone, logged 
 - [ ] Decide who owns the repository. Use a GitHub **organization**: it gives teams per group, and the repository never has to move. Moving a repository mid-event breaks links and access. A personal account works, but has no teams.
 - [ ] Check the plan. Rulesets and auto-merge, which the pipeline and every block in CLAUDE.md rely on, work on a **private** repository only on a paid plan (GitHub Pro for a personal account, Team for an organization; schools can get Team free through GitHub Education). On a free plan, make the repository public.
 - [ ] Name the GitHub admin and the Railway owner, at least two people each, so one absence doesn't block a deploy.
-- [ ] Decide who pays for Railway, and on which plan. Requiring two-factor authentication for the workspace needs the Pro plan.
+- [ ] Decide who pays for Railway, and on which plan. The free plan refuses the project: it has one always-on service per game plus the gateway (six with four teams), so it needs at least Hobby. Requiring two-factor authentication for the workspace needs the Pro plan.
 - [ ] Create the meeting room (for example Google Meet) and the team project boards' owner.
 - [ ] Rehearse the pipeline once in a throwaway repository ([KIT_REHEARSAL.md](KIT_REHEARSAL.md)), unless nothing in the pipeline, the rulesets or Railway changed since the last rehearsal.
 

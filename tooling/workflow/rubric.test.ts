@@ -39,7 +39,7 @@ describe("scoreRubric", () => {
   it("passes a well-documented, tested, small PR", () => {
     const r = scoreRubric(input());
     expect(r.skipped).toBeNull();
-    expect(r).toMatchObject({ score: 4, total: 4, changedLines: 20 });
+    expect(r).toMatchObject({ score: 4, total: 4, changedLines: 10 });
   });
 
   it("skips sync PRs and promotions", () => {
@@ -99,14 +99,16 @@ describe("scoreRubric", () => {
     expect(byId(scoreRubric(input({ body: long })), "summary")?.pass).toBe(false);
   });
 
-  it("counts changed lines without lockfiles and generated files", () => {
+  it("counts changed lines of code, without tests, docs, lockfiles and generated files", () => {
     const files = [
-      file("games/team-2/room/a.ts", 300, 150),
+      file("games/team-2/room/a.ts", 900, 150),
+      file("games/team-2/room/a.test.ts", 700, 0),
+      file("games/team-2/README.md", 300, 0),
       file("pnpm-lock.yaml", 5000, 0),
       file("server/docs/generated/api.schema.json", 900, 0),
     ];
     const r = scoreRubric(input({ files }));
-    expect(r.changedLines).toBe(450);
+    expect(r.changedLines).toBe(1050);
     expect(byId(r, "size")).toMatchObject({ pass: false });
     expect(byId(r, "size")?.tip).toMatch(/splitting/);
   });
@@ -145,7 +147,7 @@ describe("sentencesOf", () => {
 
 describe("rubricMarkdown", () => {
   it("starts with the marker and lists only counted criteria in the table", () => {
-    const md = rubricMarkdown(scoreRubric(input({ files: [file("games/team-2/room/a.ts", 500, 0)] })));
+    const md = rubricMarkdown(scoreRubric(input({ files: [file("games/team-2/room/a.ts", 1000, 0)] })));
     expect(md.startsWith(MARKER)).toBe(true);
     expect(md).toMatch(/PR rubric: 2 of 4/);
     expect(md).toMatch(/\| Passed \| Criterion \| Details \|/);
