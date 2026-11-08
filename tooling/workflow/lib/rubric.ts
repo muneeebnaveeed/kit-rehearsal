@@ -1,11 +1,12 @@
 // Scores a pull request against the rubric behind `pnpm pr:rubric`: only what a script can judge from
 // the title, body and changed files. Pure: the caller fetches the PR. Advice, never a gate.
+import { screenshotsOf } from "./check-pr.mjs";
 import { matchesAny } from "./glob.mjs";
 import { CLIENT_FILE } from "./pr-open.mjs";
 import { fieldsOf, stripComments } from "./template.mjs";
 
 export const MARKER = "<!-- kit:pr-rubric -->";
-export const MAX_CHANGED_LINES = 400;
+export const MAX_CHANGED_LINES = 1000;
 // Lockfiles and generated output say nothing about how big the change is to review.
 export const UNCOUNTED_PATHS = [
   "**/pnpm-lock.yaml",
@@ -32,7 +33,7 @@ export interface RubricInput {
   base: string;
   files: PrFile[];
   commits?: number;
-  config: { testPaths: string[]; codePaths: string[] };
+  config: { testPaths: string[]; codePaths: string[]; docsPaths: string[] };
 }
 
 export interface Criterion {
@@ -104,7 +105,13 @@ export function skipReason(head: string, base: string): string | null {
 export function scoreRubric(input: RubricInput): RubricResult {
   const { title, head, base, files, config } = input;
   const body = input.body ?? "";
-  const counted = files.filter((f) => !matchesAny(f.path, UNCOUNTED_PATHS));
+  // Tests and docs are what the rubric asks for, so they never count against the size.
+  const counted = files.filter(
+    (f) =>
+      !matchesAny(f.path, UNCOUNTED_PATHS) &&
+      !matchesAny(f.path, config.testPaths) &&
+      !matchesAny(f.path, config.docsPaths),
+  );
   const changedLines = counted.reduce((n, f) => n + f.additions + f.deletions, 0);
   const commits = input.commits ?? null;
   const skipped = skipReason(head, base);
@@ -152,20 +159,21 @@ export function scoreRubric(input: RubricInput): RubricResult {
     tip: "List the steps a reviewer runs, with the command and what they should see.",
   });
 
-  const shots = fieldValue(body, "Screenshots");
-  const hasImage = shots !== null && /!\[[^\]]*\]\(|<img\s|https?:\/\/\S+/i.test(shots);
+  const shots = screenshotsOf(fieldValue(body, "Screenshots") ?? "");
   criteria.push({
     id: "screenshots",
     label: "Screenshots of client changes",
     applies: client.length > 0,
-    pass: hasImage,
+    pass: shots.kind === "image" || shots.kind === "none",
     detail:
       client.length === 0
         ? "No client files changed."
-        : hasImage
+        : shots.kind === "image"
           ? "Has an image or link."
-          : `${client.length} client file(s) changed, no image.`,
-    tip: "Drag a screenshot or GIF of the change into the Screenshots field.",
+          : shots.kind === "none"
+            ? `No image, with a reason: ${shots.reason}`
+            : `${client.length} client file(s) changed, no image and no reason.`,
+    tip: "Drag a screenshot or GIF of the change into the Screenshots field, or write `None, <why there is nothing to show>`.",
   });
 
   const summary = fieldValue(body, "Summary");
@@ -191,10 +199,10 @@ export function scoreRubric(input: RubricInput): RubricResult {
 
   criteria.push({
     id: "size",
-    label: `Under ${MAX_CHANGED_LINES} changed lines`,
+    label: `Under ${MAX_CHANGED_LINES} changed lines of code`,
     applies: true,
     pass: changedLines < MAX_CHANGED_LINES,
-    detail: `${changedLines} changed line(s), lockfiles and generated files excluded.`,
+    detail: `${changedLines} changed line(s), tests, docs, lockfiles and generated files excluded.`,
     tip: "Consider splitting it into smaller PRs, each with its own issue.",
   });
 
@@ -233,12 +241,12 @@ export function rubricMarkdown(result: RubricResult): string {
     "",
     "Advice only: this never blocks the merge. It updates when the PR changes.",
     "",
-    "| Result | Criterion | Details |",
+    "| Passed | Criterion | Details |",
     "|---|---|---|",
   );
   for (const c of result.criteria.filter((x) => x.applies)) {
     lines.push(
-      `| ${c.pass ? "pass" : "miss"} | ${cell(c.label)} | ${cell(c.pass ? c.detail : `${c.detail} ${c.tip}`)} |`,
+      `| ${c.pass ? "✅" : "❌"} | ${cell(c.label)} | ${cell(c.pass ? c.detail : `${c.detail} ${c.tip}`)} |`,
     );
   }
   const skipped = result.criteria.filter((c) => !c.applies);

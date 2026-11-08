@@ -137,7 +137,10 @@ if (json) {
     console.log(`ok: PR follows the ${result.type} template`);
   } else {
     console.error(`PR does not follow the ${result.type} template:`);
-    for (const p of result.problems) console.error(`  - [${p.rule}] ${p.message}`);
+    for (const p of result.problems) {
+      console.error(`  - [${p.rule}] ${p.message}`);
+      if (p.fix) console.error(`    fix: ${p.fix}`);
+    }
   }
 }
 process.exit(result.ok ? EXIT.ok : EXIT.failed);

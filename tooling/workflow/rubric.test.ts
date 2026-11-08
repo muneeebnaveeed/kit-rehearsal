@@ -22,7 +22,7 @@ const good = {
   Team: "team-2",
   Summary: "Players lost their score when the connection dropped. Now the score survives a reconnect.",
   "How to test": "1. Run `pnpm dev`\n2. Join a room, kill the network, rejoin\n3. The score is still there",
-  Screenshots: "None",
+  Screenshots: "None, only the room logic changed",
 };
 const input = (over: Partial<RubricInput> = {}): RubricInput => ({
   title: "feat(team-2): keep score",
@@ -39,7 +39,7 @@ describe("scoreRubric", () => {
   it("passes a well-documented, tested, small PR", () => {
     const r = scoreRubric(input());
     expect(r.skipped).toBeNull();
-    expect(r).toMatchObject({ score: 4, total: 4, changedLines: 20 });
+    expect(r).toMatchObject({ score: 4, total: 4, changedLines: 10 });
   });
 
   it("skips sync PRs and promotions", () => {
@@ -71,11 +71,25 @@ describe("scoreRubric", () => {
     ).toBe(false);
   });
 
-  it("wants an image when client files change", () => {
+  it("wants an image, or None with a reason, when client files change", () => {
     const files = [file("games/team-2/client/Hud.tsx"), file("games/team-2/client/Hud.test.ts")];
-    expect(byId(scoreRubric(input({ files })), "screenshots")).toMatchObject({ applies: true, pass: false });
-    const withShot = body({ ...good, Screenshots: "![hud](https://github.com/user-attachments/assets/1)" });
-    expect(byId(scoreRubric(input({ files, body: withShot })), "screenshots")?.pass).toBe(true);
+    const shots = (Screenshots: string) =>
+      byId(scoreRubric(input({ files, body: body({ ...good, Screenshots }) })), "screenshots");
+    expect(shots("None")).toMatchObject({
+      applies: true,
+      pass: false,
+      detail: "2 client file(s) changed, no image and no reason.",
+    });
+    expect(shots("Looks the same")).toMatchObject({ pass: false });
+    expect(shots("![hud](https://github.com/user-attachments/assets/1)")).toMatchObject({
+      pass: true,
+      detail: "Has an image or link.",
+    });
+    expect(shots("None, only a test helper moved")).toMatchObject({
+      pass: true,
+      detail: "No image, with a reason: only a test helper moved",
+    });
+    expect(shots("n/a: the HUD reads the same")?.pass).toBe(true);
   });
 
   it("misses a summary that names code or runs long", () => {
@@ -85,14 +99,16 @@ describe("scoreRubric", () => {
     expect(byId(scoreRubric(input({ body: long })), "summary")?.pass).toBe(false);
   });
 
-  it("counts changed lines without lockfiles and generated files", () => {
+  it("counts changed lines of code, without tests, docs, lockfiles and generated files", () => {
     const files = [
-      file("games/team-2/room/a.ts", 300, 150),
+      file("games/team-2/room/a.ts", 900, 150),
+      file("games/team-2/room/a.test.ts", 700, 0),
+      file("games/team-2/README.md", 300, 0),
       file("pnpm-lock.yaml", 5000, 0),
       file("server/docs/generated/api.schema.json", 900, 0),
     ];
     const r = scoreRubric(input({ files }));
-    expect(r.changedLines).toBe(450);
+    expect(r.changedLines).toBe(1050);
     expect(byId(r, "size")).toMatchObject({ pass: false });
     expect(byId(r, "size")?.tip).toMatch(/splitting/);
   });
@@ -131,10 +147,13 @@ describe("sentencesOf", () => {
 
 describe("rubricMarkdown", () => {
   it("starts with the marker and lists only counted criteria in the table", () => {
-    const md = rubricMarkdown(scoreRubric(input({ files: [file("games/team-2/room/a.ts", 500, 0)] })));
+    const md = rubricMarkdown(scoreRubric(input({ files: [file("games/team-2/room/a.ts", 1000, 0)] })));
     expect(md.startsWith(MARKER)).toBe(true);
     expect(md).toMatch(/PR rubric: 2 of 4/);
-    expect(md).toMatch(/\| miss \| Tests changed with the code \|/);
+    expect(md).toMatch(/\| Passed \| Criterion \| Details \|/);
+    expect(md).toMatch(/\| ❌ \| Tests changed with the code \|/);
+    expect(md).toMatch(/\| ✅ \| How to test has concrete steps \|/);
+    expect(md).not.toMatch(/\| (?:pass|miss) \|/);
     expect(md).toMatch(/Not counted: screenshots of client changes/);
   });
 

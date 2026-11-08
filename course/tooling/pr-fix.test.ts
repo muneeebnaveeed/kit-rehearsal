@@ -25,6 +25,7 @@ function goodBody(linked = "Closes #12") {
     .replace(/^\*\*Team\*\*:.*$/m, "**Team**: team-2")
     .replace(/- \[ \]/g, "- [x]")
     .replace(/^\*\*How to test\*\*:[ \t]*$/m, "**How to test**: pnpm test")
+    .replace(/^\*\*Screenshots\*\*:[ \t]*$/m, "**Screenshots**: None, nothing visible changed")
     .replace(/^(\*\*(?!Checklist\*)[^*]+\*\*):[ \t]*$/gm, "$1: None");
 }
 
@@ -127,6 +128,13 @@ describe("planFix on open PRs", () => {
     expect(p.remaining.map((r) => r.rule)).toEqual(expect.arrayContaining(["empty", "checklist"]));
   });
 
+  it("writes the restructured fields with no blank line between them", () => {
+    const body = "## Summary\nFirst.\n\nSecond.\n\n## Test plan\n- [x] pnpm test passes";
+    const out = (plan({ body }).changes as { body: string }).body;
+    expect(out).not.toMatch(/\n\s*\n\*\*/);
+    expect(out).toMatch(/\*\*Summary\*\*:\nFirst\.\n\nSecond\.\n\*\*How to test\*\*:/);
+  });
+
   it("keeps the Generated-with footer at the end", () => {
     const p = plan({
       body: "## Summary\nx\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)",
@@ -186,7 +194,13 @@ describe("planFix on merged and closed PRs", () => {
   it("inserts a missing Team field right after an existing Linked issue field", () => {
     const body = "**Linked issue**: Closes #12\n\n**Summary**: x";
     const out = (plan({ state: "MERGED", body }).changes as { body: string }).body;
-    expect(out).toBe("**Linked issue**: Closes #12\n\n**Team**: team-2\n\n**Summary**: x");
+    expect(out).toBe("**Linked issue**: Closes #12\n**Team**: team-2\n**Summary**: x");
+  });
+
+  it("prepends a missing Linked issue and Team to a fields body with no blank line", () => {
+    const body = "**Summary**: x";
+    const out = (plan({ state: "MERGED", body }).changes as { body: string }).body;
+    expect(out).toBe("**Linked issue**: Closes #12\n**Team**: team-2\n**Summary**: x");
   });
 
   it("reads a body written with headings, and adds the Team after its Linked issue", () => {
@@ -203,7 +217,7 @@ describe("planFix on merged and closed PRs", () => {
     expect(closed.comment).toBeNull();
     const untouched = plan({
       state: "MERGED",
-      body: goodBody().replace("**Screenshots**: None", "**Screenshots**:"),
+      body: goodBody().replace("**Screenshots**: None, nothing visible changed", "**Screenshots**:"),
     });
     expect(untouched.changes).toEqual({});
     expect(untouched.comment).toBeNull();
@@ -216,6 +230,17 @@ describe("planFix comment", () => {
     const p = plan({ body });
     expect(p.remaining.map((r) => r.rule)).toEqual(["checklist"]);
     expect(p.comment).toContain("checklist");
+  });
+
+  it("asks for a reason when Screenshots is a bare None", () => {
+    const body = goodBody().replace(
+      "**Screenshots**: None, nothing visible changed",
+      "**Screenshots**: None",
+    );
+    const p = plan({ body });
+    expect(p.changes).toEqual({});
+    expect(p.remaining.map((r) => r.rule)).toEqual(["screenshots"]);
+    expect(p.comment).toContain("`None, <why there is nothing to show>`");
   });
 });
 
