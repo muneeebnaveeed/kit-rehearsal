@@ -133,36 +133,21 @@ export function buildIssueUrl(options: IssueLinkOptions): string {
   const net = report.net
     ? `${report.net.latencyMs} ms lag, ${report.net.jitterMs} ms jitter, ${report.net.lossPct}% loss`
     : "none";
+  const actual = (report.description || report.title).trim();
   const body = [
-    "## Goal",
-    "",
-    `${report.title}. Reported from the game with F8.`,
-    "",
+    `**Goal**: ${report.title}. Reported from the game with F8.`,
     `- Bug report (screenshot, logs, replay): ${options.reportUrl}`,
     ...(options.replayUrl ? [`- Replay: ${options.replayUrl}`] : []),
     `- Room ${room}, player ${report.playerId ?? "none"}, tick ${report.tick ?? "?"}`,
     `- Build: ${report.env}, ${report.sha.slice(0, SHORT_SHA_LENGTH)}`,
     `- Network simulation: ${net}`,
-    "",
-    "## Steps to reproduce",
-    "",
+    "**Steps to reproduce**:",
     "1. Open the bug report link above: it has the screenshot, the logs and the room's replay.",
     "2. Run the replay to the tick above.",
-    "",
-    "## Expected behaviour",
-    "",
-    "Describe what should have happened.",
-    "",
-    "## Actual behaviour",
-    "",
-    report.description || report.title,
-    "",
-    "## What changes",
-    "",
-    "Unknown yet",
-    "",
-    "## Done when",
-    "",
+    "**Expected behaviour**: Describe what should have happened.",
+    actual.includes("\n") ? `**Actual behaviour**:\n${actual}` : `**Actual behaviour**: ${actual}`,
+    "**What changes**: Unknown yet",
+    "**Done when**:",
     "- [ ] The replay no longer shows the bug",
   ].join("\n");
 

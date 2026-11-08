@@ -15,3 +15,9 @@ packageExtensions:
   "@colyseus/core@0.18.27":
     dependencies:
       express: "5.3.0"
+
+# colyseus pulls in @colyseus/auth, whose OAuth library (grant) brings two flagged packages the kit never
+# runs: uuid@8 (fixed in 11.1.1) and, through the optional jwk-to-pem, elliptic (no fix released).
+overrides:
+  request-oauth>uuid: "^11.1.1"
+  grant>jwk-to-pem: "-"
