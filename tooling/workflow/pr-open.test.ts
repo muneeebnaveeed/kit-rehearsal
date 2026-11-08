@@ -34,7 +34,7 @@ const allFacts = Object.fromEntries(Object.values(CHECKLIST_FACTS).map(([, fact]
 
 const issue = {
   number: 14,
-  title: "[team-2] Add login page",
+  title: "Add login page",
   state: "OPEN",
   labels: ["team-2"],
   assignees: [],

@@ -166,19 +166,20 @@ describe("syncAutoMerge", () => {
 });
 
 describe("promotePr", () => {
-  const issue = { number: 40, state: "OPEN", labels: ["team-2"] };
+  const issue = { number: 40, state: "OPEN", labels: ["platform"] };
 
-  it("opens feature/team-N -> main as a chore PR that check:pr accepts, referring to the team's tracking issue", () => {
+  it("opens feature/team-N -> main as a platform chore PR that check:pr accepts, referring to the tracking issue", () => {
     const pr = promotePr({ templates, issue, team: "team-2", ahead: 7, behind: 0, prs, conflicts: [] });
     expect(pr).toMatchObject({
       type: "chore",
       head: "feature/team-2",
       base: "main",
-      title: "chore(team-2): merge feature/team-2 into main",
-      labels: ["team-2"],
+      title: "chore(platform): merge feature/team-2 into main",
+      // It merges every owner's files, so it is platform work, like a sync PR.
+      labels: ["platform"],
     });
     expect(section(pr.body, "Linked issue")).toBe("Refs #40");
-    expect(section(pr.body, "Team")).toBe("team-2");
+    expect(section(pr.body, "Team")).toBe("platform");
     expect(section(pr.body, "Summary")).toContain("7 commit(s)");
     expect(section(pr.body, "Summary")).toContain("Ships team-2's finished work to production");
     expect(section(pr.body, "Impact")).toContain("deploy to production");

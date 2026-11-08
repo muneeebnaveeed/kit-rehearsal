@@ -3,10 +3,10 @@
 // with Refs #N. Merging needs green CI and a review like any other PR; with --auto-merge, GitHub merges
 // it as soon as both are in place (the hourly promotion workflow uses it).
 //
-//   pnpm team:promote 2 --issue 40      open feature/team-2 -> main, referring to issue #40 (labelled team-2)
+//   pnpm team:promote 2 --issue 40      open feature/team-2 -> main, referring to issue #40 (labelled platform)
 //   <N>                                 team 1 to 4; defaults to --team, then git config kit.team
 //   --team team-N                       the team, if <N> is not given
-//   --issue <n>                         the team's issue the PR refers to (required)
+//   --issue <n>                         the platform issue the PR refers to (required)
 //   --auto-merge                        turn on auto-merge once the PR is open
 //   --dry-run                           check everything and print the PR, but don't open it
 //   --json                              machine-readable output
@@ -78,7 +78,7 @@ if (existing.length > 0) {
   ]);
 }
 const linked = getIssue(number);
-const issueProblemsFound = issueProblems(linked, { number, label: team, open: true });
+const issueProblemsFound = issueProblems(linked, { number, label: "platform", open: true });
 if (issueProblemsFound.length > 0) fail(`${branch} was not promoted`, issueProblemsFound);
 
 const warnings = [];
