@@ -47,5 +47,5 @@ export function fillTemplate(template, { sections, tick = {} }) {
   for (const key of Object.keys(tick)) {
     if (!used.has(key)) throw new Error(`The template's checklist has no item "${key}".`);
   }
-  return `${parts.join("\n\n")}\n`;
+  return `${parts.join("\n")}\n`;
 }

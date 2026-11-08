@@ -14,7 +14,8 @@
 //   --title "<text>"          the title (default: from the issue title, else the commits)
 //   --<field> "<text>"        fill a field, named after its label: --summary (required: why the change
 //                             exists, in 2 or 3 sentences, never a list of what changed), --how-to-test,
-//                             --screenshots, --root-cause, --impact, --behaviour-unchanged, --pages-affected
+//                             --screenshots (an image, or "None, <why there is nothing to show>"),
+//                             --root-cause, --impact, --behaviour-unchanged, --pages-affected
 //   --tested                  you ran the steps you wrote under --how-to-test (ticks that item)
 //   --body-file <file>        use this body instead of drafting one (still checked)
 //   --dry-run                 do everything except push and create the PR; print the draft
@@ -347,7 +348,9 @@ for (const m of missing) {
     message: `pr:open can't fill "**${m}**" from facts.`,
     fix: WHY_FIELDS.includes(m)
       ? `Pass --${sectionFlag(m)} "<why, in 2 or 3 sentences: the problem or goal and its impact, not what changed>".`
-      : `Pass --${sectionFlag(m)} "<text>".`,
+      : m === "Screenshots"
+        ? 'Pass --screenshots "<image link>", or --screenshots "None, <why there is nothing to show>".'
+        : `Pass --${sectionFlag(m)} "<text>".`,
   });
 }
 for (const item of unticked) {

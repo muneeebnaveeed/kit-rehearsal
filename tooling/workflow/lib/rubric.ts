@@ -1,5 +1,6 @@
 // Scores a pull request against the rubric behind `pnpm pr:rubric`: only what a script can judge from
 // the title, body and changed files. Pure: the caller fetches the PR. Advice, never a gate.
+import { screenshotsOf } from "./check-pr.mjs";
 import { matchesAny } from "./glob.mjs";
 import { CLIENT_FILE } from "./pr-open.mjs";
 import { fieldsOf, stripComments } from "./template.mjs";
@@ -152,20 +153,21 @@ export function scoreRubric(input: RubricInput): RubricResult {
     tip: "List the steps a reviewer runs, with the command and what they should see.",
   });
 
-  const shots = fieldValue(body, "Screenshots");
-  const hasImage = shots !== null && /!\[[^\]]*\]\(|<img\s|https?:\/\/\S+/i.test(shots);
+  const shots = screenshotsOf(fieldValue(body, "Screenshots") ?? "");
   criteria.push({
     id: "screenshots",
     label: "Screenshots of client changes",
     applies: client.length > 0,
-    pass: hasImage,
+    pass: shots.kind === "image" || shots.kind === "none",
     detail:
       client.length === 0
         ? "No client files changed."
-        : hasImage
+        : shots.kind === "image"
           ? "Has an image or link."
-          : `${client.length} client file(s) changed, no image.`,
-    tip: "Drag a screenshot or GIF of the change into the Screenshots field.",
+          : shots.kind === "none"
+            ? `No image, with a reason: ${shots.reason}`
+            : `${client.length} client file(s) changed, no image and no reason.`,
+    tip: "Drag a screenshot or GIF of the change into the Screenshots field, or write `None, <why there is nothing to show>`.",
   });
 
   const summary = fieldValue(body, "Summary");
@@ -233,12 +235,12 @@ export function rubricMarkdown(result: RubricResult): string {
     "",
     "Advice only: this never blocks the merge. It updates when the PR changes.",
     "",
-    "| Result | Criterion | Details |",
+    "| Passed | Criterion | Details |",
     "|---|---|---|",
   );
   for (const c of result.criteria.filter((x) => x.applies)) {
     lines.push(
-      `| ${c.pass ? "pass" : "miss"} | ${cell(c.label)} | ${cell(c.pass ? c.detail : `${c.detail} ${c.tip}`)} |`,
+      `| ${c.pass ? "✅" : "❌"} | ${cell(c.label)} | ${cell(c.pass ? c.detail : `${c.detail} ${c.tip}`)} |`,
     );
   }
   const skipped = result.criteria.filter((c) => !c.applies);

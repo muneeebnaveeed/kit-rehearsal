@@ -8,7 +8,7 @@ Usually opened by `pnpm branches:sync`. Fill in every field and keep the labels 
 **Summary**: <!-- why now: which branch falls behind main, by how much, and whether merging conflicts -->
 **Included changes**: <!-- the pull requests that arrive with this merge -->
 **How to test**: <!-- steps a reviewer can follow to see it working -->
-**Screenshots**: <!-- of visible changes, or None -->
+**Screenshots**: <!-- an image of visible changes, or "None, <why there is nothing to show>" -->
 **Checklist**:
 - [ ] The PR refers to an issue with `Refs #N`, and that issue has a team label
 - [ ] This PR has the same team label as the issue

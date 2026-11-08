@@ -35,7 +35,7 @@ Use `origin/main` as `<base-ref>` for platform and instructor work, `origin/feat
 
 ## 3. Fill the template
 
-Read the file named in `template`. Write the PR body to a scratch file (not into the repo) that keeps **every `**Label**:` field, in order, with the exact same label**, one blank line between fields. A value can run over several lines (a list, test steps); put it on the lines after `**Label**:`. Remove the HTML comments. Don't add `##` headings.
+Read the file named in `template`. Write the PR body to a scratch file (not into the repo) that keeps **every `**Label**:` field, in order, with the exact same label**, one field per line with no blank line between fields. A value can run over several lines (a list, test steps); put it on the lines after `**Label**:`. Remove the HTML comments. Don't add `##` headings.
 
 - **Title:** Conventional Commits with the label as the scope, like a commit subject: `<type>(<label>): <short imperative summary>`, lowercase, at most 72 characters, no period. Use the `commitType` from the classification (`feat` for feature, `fix` for bug, `docs`, `refactor`, a chore type, or `chore` for sync), e.g. `feat(team-2): add login page`.
 - **Linked issue:** `Closes #<n>` (work PRs) or `Refs #<n>` (sync).
@@ -44,7 +44,7 @@ Read the file named in `template`. Write the PR body to a scratch file (not into
 - **Root cause** (bug): why it broke, the wrong assumption or missed case, not the lines you changed. Same rules as Summary.
 - Fill the other type-specific fields (Pages affected, Impact, Behaviour unchanged, Included changes) when the template has them.
 - **How to test:** only steps and commands that you actually ran, with their real results. If you did not run something, say so. Never claim a test passed that you did not run.
-- **Screenshots:** `None` if nothing visible changed.
+- **Screenshots:** an image or link of the visible change, or `None, <why there is nothing to show>` (for example `None, no client files changed`). A bare `None` fails `pnpm check:pr`.
 - **Checklist:** tick an item only if it is true. If one is not, fix the cause (rename the branch, change the base) before ticking it. Notes after an item are fine.
 - Write in English. Use only facts from the issue, the code and the commands you ran.
 

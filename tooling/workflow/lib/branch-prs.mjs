@@ -123,7 +123,7 @@ export function syncPr({ templates, issue, team, behind, prs, conflicts }) {
         "1. CI is green on this PR.",
         `2. After merging: \`git log origin/${branch}..origin/main\` is empty.`,
       ].join("\n"),
-      Screenshots: "None",
+      Screenshots: "None, a sync carries changes reviewed and shown in their own PRs",
     },
     tick: {
       "The PR refers to an issue with `Refs #N`": "checked by pnpm branches:sync",
@@ -183,7 +183,7 @@ export function promotePr({ templates, issue, team, ahead, behind, prs, conflict
         "1. CI and the Workflow checks are green on this PR.",
         `2. After merging: \`git log origin/main..origin/${branch}\` is empty, the Production check run on the merge commit is green, and \`pnpm env:status\` shows production on the new \`main\`.`,
       ].join("\n"),
-      Screenshots: "None",
+      Screenshots: "None, a promotion carries changes reviewed and shown in their own PRs",
     },
     tick: {
       "The PR closes an issue with `Closes #N`":
