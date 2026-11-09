@@ -1,13 +1,13 @@
 # Rehearsal
 
-A dry run of the whole flow in a throwaway repository, before the real one exists. It proves what the tests can't: that the pipeline app's PRs start CI, that auto-merge waits for an approval, that Railway deploys a merge and the production check sees it, and that GitHub keeps `feature/team-N` after a promotion merges. Plan one afternoon. Do it each time the kit changes in the pipeline, the rulesets or Railway.
+A dry run of the whole flow in a throwaway repository, before the real one exists. It proves what the tests can't: that muneebot's PRs start CI, that auto-merge waits for an approval, that Railway deploys a merge and the production check sees it, and that GitHub keeps `feature/team-N` after a promotion merges. Plan one afternoon. Do it each time the kit changes in the pipeline, the rulesets or Railway.
 
-You need two GitHub accounts: one that opens a work PR and one that approves it. The pipeline app opens the automatic PRs, so either account can approve those.
+You need two GitHub accounts: one that opens a work PR and one that approves it. Muneebot opens the automatic PRs, so either account can approve those.
 
 ## 1. Repository
 
 - [ ] Create a repository from the template, e.g. `OWNER/kit-rehearsal`: private on a paid plan, public otherwise (rulesets and auto-merge need one or the other), and follow [KIT_SETUP.md](KIT_SETUP.md) sections 2 to 7 against it, with these shortcuts:
-  - Labels, rulesets, the pipeline app and the `KIT_GATEWAY` variable: as written. These are what is being rehearsed. Install the app you already have on the rehearsal repository as well.
+  - Labels, rulesets, muneebot and the `KIT_GATEWAY` variable: as written. These are what is being rehearsed. Install the app you already have on the rehearsal repository as well.
   - People: just the two accounts.
   - Railway: a separate project (`railwayProject` in `kit.json`), so the rehearsal never touches the real one, on a paid plan (the free plan refuses six services). The template game and one team stub are enough in `GAMES`.
 
