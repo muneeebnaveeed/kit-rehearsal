@@ -59,15 +59,15 @@ Commands use `OWNER/REPO` for the new repository. Run them from a clone, logged 
 
   Keep **Require approval for all outside collaborators** for workflows from forks.
 - [ ] **Security.** Dependabot alerts on. On a public repository, secret scanning and push protection on.
-- [ ] **Pipeline app.** The hourly pipeline (`.github/workflows/pipeline.yml`) opens the sync and promotion PRs. PRs opened with the built-in Actions token start no CI, so it opens them as a GitHub App, which gets a fresh one-hour token each run. Make the app once and reuse it for every event:
-  1. Create it under the account or organization that owns the repository: Settings, Developer settings, GitHub Apps, **New GitHub App**. Any name (for example `kit-pipeline`) and homepage URL; turn **Webhook** off. Repository permissions: **Contents** read and write (auto-merge merges as the app; the rulesets still stop it pushing to `main` or a team branch), **Pull requests** read and write, **Issues** read and write. **Only on this account.**
+- [ ] **Muneebot.** The hourly pipeline (`.github/workflows/pipeline.yml`) opens the sync and promotion PRs. PRs opened with the built-in Actions token start no CI, so it opens them as a GitHub App, which gets a fresh one-hour token each run. Make the app once and reuse it for every event:
+  1. Create it under the account or organization that owns the repository: Settings, Developer settings, GitHub Apps, **New GitHub App**. Name it `muneebot`, so its PRs read as opened by `muneebot[bot]` (app names are unique on GitHub, so it is the one app for every event), with any homepage URL; turn **Webhook** off. Repository permissions: **Contents** read and write (auto-merge merges as the app; the rulesets still stop it pushing to `main` or a team branch), **Pull requests** read and write, **Issues** read and write. **Only on this account.**
   2. On the app's page, note the **Client ID** and **Generate a private key** (a `.pem` file downloads).
   3. **Install App**, on this repository only.
-  4. Store the Client ID as the Actions variable `PIPELINE_APP_CLIENT_ID` and the whole `.pem` as the Actions secret `PIPELINE_APP_KEY`, then delete the file:
+  4. Store the Client ID as the Actions variable `MUNEEBOT_APP_CLIENT_ID` and the whole `.pem` as the Actions secret `MUNEEBOT_APP_KEY`, then delete the file:
 
      ```bash
-     gh variable set PIPELINE_APP_CLIENT_ID -R OWNER/REPO -b <client-id>
-     gh secret set PIPELINE_APP_KEY -R OWNER/REPO < path/to/key.pem
+     gh variable set MUNEEBOT_APP_CLIENT_ID -R OWNER/REPO -b <client-id>
+     gh secret set MUNEEBOT_APP_KEY -R OWNER/REPO < path/to/key.pem
      ```
 
   The key is the only secret the repository needs: no workflow deploys, so there is no Railway token in GitHub. A person can approve the app's PRs, since the app opened them.
@@ -91,7 +91,7 @@ The commands are in [server/docs/RAILWAY_SETUP.md](server/docs/RAILWAY_SETUP.md)
 - [ ] Install the Railway GitHub app on this repository only *(GitHub admin)*.
 - [ ] Create the project (named as `railwayProject` in `kit.json`). It has one environment, `production`, which Railway creates.
 - [ ] `railway link`, `railway config plan` (read it: anything missing from `.railway/railway.ts` is deleted), `railway config apply`.
-- [ ] With auto-merge, GitHub records the pipeline app as the one who merged a promotion. If Railway holds that deploy for approval (it does for an author it can't link to a member), a member clicks Approve; the rehearsal shows which.
+- [ ] With auto-merge, GitHub records muneebot as the one who merged a promotion. If Railway holds that deploy for approval (it does for an author it can't link to a member), a member clicks Approve; the rehearsal shows which.
 - [ ] Give the `gateway` service a public domain, and nothing else.
 - [ ] Members: the platform team as Editors, everyone else Viewers, Owner only for the administrators. Turn on **Require 2FA** if the plan allows it.
 - [ ] Check `<address>/health` and `<address>/team-1/health` to `team-4`.
@@ -120,6 +120,6 @@ Import them last: a required check that has never run on the repository blocks e
 
 ## 9. After the event
 
-- [ ] Approve the last promotions, then set `PIPELINE` to `off` and uninstall the pipeline app from the repository. Run the course reports (`course/README.md`, "Evaluation") and keep the student scores out of the repository.
+- [ ] Approve the last promotions, then set `PIPELINE` to `off` and uninstall muneebot from the repository. Run the course reports (`course/README.md`, "Evaluation") and keep the student scores out of the repository.
 - [ ] Archive the repository (Settings, General, Danger Zone) so it stays readable but nobody can push.
 - [ ] Remove Railway members who no longer need access, and stop the production services once nobody plays the games any more.
